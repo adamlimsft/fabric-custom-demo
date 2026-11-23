@@ -1,0 +1,1305 @@
+{
+ "pack": {
+  "id": "government",
+  "industry": "Government",
+  "org": "Riverbend Regional Authority",
+  "short": "RRA",
+  "prefix": "GV",
+  "tagline": "government authority delivering local infrastructure and citizen services (fits a council or a state agency)",
+  "email_domain": "riverbend.example.gov.au",
+  "region_col": "district",
+  "region_label": "district",
+  "regions": [
+   "North District",
+   "South District",
+   "East District",
+   "West District",
+   "Central District"
+  ],
+  "name_words": [
+   "Murray St",
+   "River Rd",
+   "Banksia Park",
+   "Station St",
+   "Ridge Rd",
+   "Lakeside",
+   "Market Sq",
+   "Hill St",
+   "Creek Rd",
+   "Library Lane"
+  ],
+  "sys": {
+   "ops": {
+    "code": "ams",
+    "name": "Asset and works management system (on-prem SQL Server)",
+    "type": "Database",
+    "owner": "Infrastructure Services",
+    "fabric": "Mirroring for SQL Server vs Copy job incremental vs pipeline Copy"
+   },
+   "tel": {
+    "code": "iot",
+    "name": "Smart infrastructure sensor network (15-min CSV) and BoM rainfall",
+    "type": "IoT file drop",
+    "owner": "Smart Infrastructure",
+    "fabric": "Eventstream from IoT Hub; files to OneLake for batch"
+   },
+   "crm": {
+    "code": "crm",
+    "name": "Citizen request and case portal (Salesforce Public Sector)",
+    "type": "SaaS CRM",
+    "owner": "Citizen Services",
+    "fabric": "Copy job with the Salesforce connector; Dynamics 365 / Dataverse portals can use Link to Fabric"
+   }
+  },
+  "entity": {
+   "table": "public_asset",
+   "src": "public_assets",
+   "label": "public asset",
+   "plural": "public assets",
+   "id": "asset_id",
+   "code": "asset_ref",
+   "code_prefix": "PA",
+   "name_col": "asset_name",
+   "type_col": "asset_type",
+   "types": [
+    "ROAD_SEGMENT",
+    "BRIDGE",
+    "PUBLIC_BUILDING",
+    "STORMWATER_PIT",
+    "STREETLIGHT"
+   ],
+   "status": [
+    "IN_SERVICE",
+    "UNDER_REPAIR",
+    "CLOSED",
+    "DISPOSED"
+   ],
+   "tier_col": "criticality",
+   "tier_label": "criticality (1-5, 5 = most critical)",
+   "cap_col": "replacement_value_kaud",
+   "cap_label": "replacement value (AUD thousands)",
+   "cap_range": [
+    5,
+    25000
+   ],
+   "start_col": "constructed_date",
+   "start_years": [
+    1950,
+    2025
+   ],
+   "drift_col": "maintenance_contractor",
+   "drift_values": [
+    "Contractor A",
+    "Contractor B",
+    "In-house crew"
+   ],
+   "owner": "Infrastructure Services",
+   "count": 240
+  },
+  "event": {
+   "table": "citizen_case",
+   "src": "citizen_cases",
+   "label": "citizen case",
+   "plural": "citizen cases",
+   "id": "case_id",
+   "id_start": 600001,
+   "type_col": "case_type",
+   "types": [
+    "ROAD_REPAIR",
+    "FLOOD_DRAINAGE",
+    "PUBLIC_SAFETY",
+    "PERMIT"
+   ],
+   "type_names": [
+    "Road repair",
+    "Flooding and drainage",
+    "Public safety hazard",
+    "Permit or licence application"
+   ],
+   "urgent_type": "FLOOD_DRAINAGE",
+   "status": [
+    "LODGED",
+    "ASSIGNED",
+    "COMPLETED",
+    "WITHDRAWN"
+   ],
+   "open_ts": "lodged_ts",
+   "close_ts": "completed_ts",
+   "open_verb": "lodged",
+   "close_verb": "completed",
+   "amount_col": "cost_aud",
+   "amount_range": [
+    80,
+    30000
+   ],
+   "qty_col": "crew_hours",
+   "qty_range": [
+    0.5,
+    40
+   ],
+   "descriptions": [
+    "Pothole reported near school",
+    "Blocked stormwater drain",
+    "Streetlight out on main road",
+    "Fallen branch on footpath",
+    "Water over road",
+    "Event permit for park",
+    "Damaged handrail on bridge",
+    "Footpath trip hazard"
+   ],
+   "owner": "Citizen Services"
+  },
+  "reading": {
+   "table": "sensor_reading",
+   "src": "sensor_readings",
+   "label": "smart infrastructure sensor readings",
+   "fact": "sensor",
+   "monitored": 24,
+   "monitored_types": [
+    "STORMWATER_PIT",
+    "BRIDGE",
+    "ROAD_SEGMENT"
+   ],
+   "metrics": [
+    {
+     "col": "water_level_cm",
+     "label": "water level",
+     "unit": "cm",
+     "base": 35,
+     "sd": 15,
+     "min": 0,
+     "max": 500,
+     "threshold": 150
+    },
+    {
+     "col": "traffic_count",
+     "label": "vehicle count",
+     "unit": "vehicles",
+     "base": 140,
+     "sd": 60,
+     "min": 0,
+     "max": 10000
+    },
+    {
+     "col": "pm25_ugm3",
+     "label": "PM2.5",
+     "unit": "µg/m³",
+     "base": 8,
+     "sd": 4,
+     "min": 0,
+     "max": 1000
+    }
+   ],
+   "sentinel": 999.9,
+   "owner": "Smart Infrastructure"
+  },
+  "party": {
+   "table": "citizen",
+   "src": "citizens",
+   "label": "citizen",
+   "plural": "citizens",
+   "id": "citizen_id",
+   "id_prefix": "CZ",
+   "sf_type": "contact",
+   "segment_col": "citizen_type",
+   "segments": [
+    "Resident",
+    "Business",
+    "Concession holder",
+    "Visitor"
+   ],
+   "status": [
+    "Active",
+    "Moved away"
+   ],
+   "sensitive_col": "concession_card_no",
+   "sensitive_label": "concession card number",
+   "sensitive_treatment": "hash",
+   "owner": "Citizen Services",
+   "count": 300
+  },
+  "extra": {
+   "table": "rainfall_daily",
+   "src": "rainfall",
+   "label": "BoM rainfall",
+   "sys": "tel",
+   "cols": [
+    {
+     "col": "rainfall_mm",
+     "base": 4,
+     "sd": 8,
+     "min": 0,
+     "max": 500
+    },
+    {
+     "col": "max_gust_kmh",
+     "base": 40,
+     "sd": 15,
+     "min": 0,
+     "max": 200
+    },
+    {
+     "col": "river_height_m",
+     "base": 1.8,
+     "sd": 0.6,
+     "min": 0,
+     "max": 20
+    }
+   ],
+   "cat_col": "warning_level",
+   "cat_values": [
+    "None",
+    "Advice",
+    "Watch and act",
+    "Emergency"
+   ],
+   "owner": "Emergency Management",
+   "story": "rainfall and river height against flooding cases by district"
+  },
+  "alert": {
+   "stream": "sensor_alert",
+   "label": "sensor alert",
+   "codes": [
+    "FLOOD_LEVEL",
+    "LIGHT_FAULT",
+    "TAMPER"
+   ],
+   "storm": "storm front"
+  },
+  "ref": {
+   "title": "Citizen case service standards",
+   "owner": "Citizen Services",
+   "rows": [
+    [
+     "ROAD_REPAIR",
+     "Roads",
+     72,
+     "Roads Maintenance"
+    ],
+    [
+     "FLOOD_DRAINAGE",
+     "Emergency",
+     4,
+     "Stormwater"
+    ],
+    [
+     "PUBLIC_SAFETY",
+     "Safety",
+     24,
+     "Field Response"
+    ],
+    [
+     "PERMIT",
+     "Approvals",
+     480,
+     "Permits and Licensing"
+    ]
+   ]
+  },
+  "impact": {
+   "col": "cost_at_risk_aud",
+   "label": "cost at risk",
+   "open_cost": 2500,
+   "breach_cost": 1200,
+   "cap_rate": 0.5,
+   "rule": "$2,500 per open case + $1,200 per 15-min window above the water-level threshold + replacement value (k) x criticality x $0.50"
+  },
+  "ai": {
+   "persona": "public sector operations and citizen services",
+   "cust": "state agencies, local councils, transport, water and emergency services",
+   "q_model": [
+    "Which district lodged the most citizen cases this month?",
+    "Show citizen case cost by case type and month.",
+    "Which critical assets have open flooding cases?"
+   ],
+   "q_agent": [
+    "Which 10 public assets have the highest cost at risk, and how many open cases does each have?",
+    "Compare average hours to complete flooding cases by district against the 4-hour standard.",
+    "Which stormwater pits went above 150 cm water level in the last 3 days?",
+    "How many permit applications are still open and how long have they been waiting?",
+    "How many concession holders lodged cases in each district?"
+   ],
+   "q_onto": [
+    "Show bridges in East District with an open case and a high risk band.",
+    "For the stormwater pit with the highest water level, list its citizen cases and their cost.",
+    "Which citizens are linked to assets that are closed?"
+   ]
+  }
+ },
+ "source_system": [
+  {
+   "source_system": "ams",
+   "industry": "government",
+   "display_name": "Asset and works management system (on-prem SQL Server)",
+   "system_type": "Database",
+   "connection_pattern": "On-premises data gateway -> pipeline Copy with watermark query",
+   "technical_owner": "Infrastructure Services",
+   "fabric_options": "Mirroring for SQL Server vs Copy job incremental vs pipeline Copy"
+  },
+  {
+   "source_system": "iot",
+   "industry": "government",
+   "display_name": "Smart infrastructure sensor network (15-min CSV) and BoM rainfall",
+   "system_type": "IoT file drop",
+   "connection_pattern": "Files dropped to OneLake (Files/landing) every 15 minutes",
+   "technical_owner": "Smart Infrastructure",
+   "fabric_options": "Eventstream from IoT Hub; files to OneLake for batch"
+  },
+  {
+   "source_system": "crm",
+   "industry": "government",
+   "display_name": "Citizen request and case portal (Salesforce Public Sector)",
+   "system_type": "SaaS CRM",
+   "connection_pattern": "REST/OData API -> JSON landed per day",
+   "technical_owner": "Citizen Services",
+   "fabric_options": "Copy job with the Salesforce connector; Dynamics 365 / Dataverse portals can use Link to Fabric"
+  }
+ ],
+ "ingestion_object": [
+  {
+   "object_id": "GV_AMS_PUBLIC_ASSETS",
+   "industry": "government",
+   "source_system": "ams",
+   "source_object": "public_assets",
+   "source_type": "database",
+   "ingest_method": "copy_db",
+   "landing_format": "csv",
+   "landing_path": "landing/ams/public_assets",
+   "read_options": "{\"header\": true, \"delimiter\": \",\"}",
+   "source_table": "src.public_assets",
+   "load_type": "incremental",
+   "watermark_column": "last_modified",
+   "primary_keys": "asset_id",
+   "dedupe_order_by": "last_modified DESC, _ingested_at DESC",
+   "bronze_table": "ams_public_assets",
+   "silver_table": "public_asset",
+   "silver_write_mode": "merge_scd2",
+   "load_group": "reference",
+   "priority": 10,
+   "sla_hours": 26,
+   "data_owner": "Infrastructure Services",
+   "sensitivity": "Internal",
+   "active": true,
+   "description": "Public asset register. SCD2 keeps status, criticality and replacement_value_kaud history.",
+   "fabric_alternative": "Strong mirroring candidate - small, slowly changing, needed in near real time by operations"
+  },
+  {
+   "object_id": "GV_AMS_CITIZEN_CASES",
+   "industry": "government",
+   "source_system": "ams",
+   "source_object": "citizen_cases",
+   "source_type": "database",
+   "ingest_method": "copy_db",
+   "landing_format": "csv",
+   "landing_path": "landing/ams/citizen_cases",
+   "read_options": "{\"header\": true, \"delimiter\": \",\"}",
+   "source_table": "src.citizen_cases",
+   "load_type": "incremental",
+   "watermark_column": "last_modified",
+   "primary_keys": "case_id",
+   "dedupe_order_by": "last_modified DESC, _ingested_at DESC",
+   "bronze_table": "ams_citizen_cases",
+   "silver_table": "citizen_case",
+   "silver_write_mode": "merge_scd1",
+   "load_group": "transactional",
+   "priority": 20,
+   "sla_hours": 26,
+   "data_owner": "Citizen Services",
+   "sensitivity": "Internal",
+   "active": true,
+   "description": "Citizen cases - incremental by last_modified; can arrive before their public asset (late-arriving).",
+   "fabric_alternative": "Copy job incremental or mirroring; keep the watermark query if the source is on-prem"
+  },
+  {
+   "object_id": "GV_IOT_SENSOR_READINGS",
+   "industry": "government",
+   "source_system": "iot",
+   "source_object": "sensor_readings",
+   "source_type": "file",
+   "ingest_method": "landed_file",
+   "landing_format": "csv",
+   "landing_path": "landing/iot/sensor_readings",
+   "read_options": "{\"header\": true, \"delimiter\": \",\"}",
+   "source_table": null,
+   "load_type": "incremental",
+   "watermark_column": null,
+   "primary_keys": "asset_id,reading_ts",
+   "dedupe_order_by": "_ingested_at DESC",
+   "bronze_table": "iot_sensor_readings",
+   "silver_table": "sensor_reading",
+   "silver_write_mode": "insert_only",
+   "load_group": "telemetry",
+   "priority": 30,
+   "sla_hours": 2,
+   "data_owner": "Smart Infrastructure",
+   "sensitivity": "Internal",
+   "active": true,
+   "description": "Smart infrastructure sensor readings every 15 minutes, four micro-batch files a day. Insert-only and idempotent.",
+   "fabric_alternative": "Eventstream into Eventhouse for real time; keep this batch path for history and reconciliation"
+  },
+  {
+   "object_id": "GV_CRM_CITIZENS",
+   "industry": "government",
+   "source_system": "crm",
+   "source_object": "citizens",
+   "source_type": "api",
+   "ingest_method": "landed_file",
+   "landing_format": "json",
+   "landing_path": "landing/crm/citizens",
+   "read_options": "{\"multiline\": true, \"json_root\": \"records\"}",
+   "source_table": null,
+   "load_type": "full",
+   "watermark_column": null,
+   "primary_keys": "citizen_id",
+   "dedupe_order_by": "last_modified_ts DESC, _ingested_at DESC",
+   "bronze_table": "crm_citizens",
+   "silver_table": "citizen",
+   "silver_write_mode": "merge_scd1",
+   "load_group": "reference",
+   "priority": 15,
+   "sla_hours": 26,
+   "data_owner": "Citizen Services",
+   "sensitivity": "Confidential",
+   "active": true,
+   "description": "Citizens - full daily snapshot from the CRM API (contains PII). Missing rows are soft-deleted.",
+   "fabric_alternative": "Copy job with the CRM connector; Dataverse-based CRMs can use Link to Fabric instead of copying"
+  }
+ ],
+ "column_map": [
+  {
+   "object_id": "GV_AMS_PUBLIC_ASSETS",
+   "column_order": 0,
+   "source_column": "asset_id",
+   "target_column": "asset_id",
+   "data_type": "int",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "GV_AMS_PUBLIC_ASSETS",
+   "column_order": 1,
+   "source_column": "asset_ref",
+   "target_column": "asset_ref",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "GV_AMS_PUBLIC_ASSETS",
+   "column_order": 2,
+   "source_column": "asset_name",
+   "target_column": "asset_name",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "GV_AMS_PUBLIC_ASSETS",
+   "column_order": 3,
+   "source_column": "asset_type",
+   "target_column": "asset_type",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "GV_AMS_PUBLIC_ASSETS",
+   "column_order": 4,
+   "source_column": "district",
+   "target_column": "district",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "GV_AMS_PUBLIC_ASSETS",
+   "column_order": 5,
+   "source_column": "status",
+   "target_column": "status",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "GV_AMS_PUBLIC_ASSETS",
+   "column_order": 6,
+   "source_column": "criticality",
+   "target_column": "criticality",
+   "data_type": "int",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "GV_AMS_PUBLIC_ASSETS",
+   "column_order": 7,
+   "source_column": "replacement_value_kaud",
+   "target_column": "replacement_value_kaud",
+   "data_type": "double",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "GV_AMS_PUBLIC_ASSETS",
+   "column_order": 8,
+   "source_column": "constructed_date",
+   "target_column": "constructed_date",
+   "data_type": "date",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "GV_AMS_PUBLIC_ASSETS",
+   "column_order": 9,
+   "source_column": "last_modified",
+   "target_column": "last_modified",
+   "data_type": "timestamp",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "GV_AMS_CITIZEN_CASES",
+   "column_order": 0,
+   "source_column": "case_id",
+   "target_column": "case_id",
+   "data_type": "int",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "GV_AMS_CITIZEN_CASES",
+   "column_order": 1,
+   "source_column": "asset_id",
+   "target_column": "asset_id",
+   "data_type": "int",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "GV_AMS_CITIZEN_CASES",
+   "column_order": 2,
+   "source_column": "case_type",
+   "target_column": "case_type",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "GV_AMS_CITIZEN_CASES",
+   "column_order": 3,
+   "source_column": "priority",
+   "target_column": "priority",
+   "data_type": "int",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "GV_AMS_CITIZEN_CASES",
+   "column_order": 4,
+   "source_column": "status",
+   "target_column": "status",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "GV_AMS_CITIZEN_CASES",
+   "column_order": 5,
+   "source_column": "lodged_ts",
+   "target_column": "lodged_ts",
+   "data_type": "timestamp",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "GV_AMS_CITIZEN_CASES",
+   "column_order": 6,
+   "source_column": "completed_ts",
+   "target_column": "completed_ts",
+   "data_type": "timestamp",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "GV_AMS_CITIZEN_CASES",
+   "column_order": 7,
+   "source_column": "cost_aud",
+   "target_column": "cost_aud",
+   "data_type": "decimal(12,2)",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "GV_AMS_CITIZEN_CASES",
+   "column_order": 8,
+   "source_column": "crew_hours",
+   "target_column": "crew_hours",
+   "data_type": "double",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "GV_AMS_CITIZEN_CASES",
+   "column_order": 9,
+   "source_column": "description",
+   "target_column": "description",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "GV_AMS_CITIZEN_CASES",
+   "column_order": 10,
+   "source_column": "last_modified",
+   "target_column": "last_modified",
+   "data_type": "timestamp",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "GV_IOT_SENSOR_READINGS",
+   "column_order": 0,
+   "source_column": "asset_id",
+   "target_column": "asset_id",
+   "data_type": "int",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "GV_IOT_SENSOR_READINGS",
+   "column_order": 1,
+   "source_column": "reading_time",
+   "target_column": "reading_ts",
+   "data_type": "timestamp",
+   "transform_expr": "to_timestamp(reading_time, 'dd/MM/yyyy HH:mm')",
+   "pii_treatment": "none",
+   "sensitivity": "none",
+   "description": ""
+  },
+  {
+   "object_id": "GV_IOT_SENSOR_READINGS",
+   "column_order": 2,
+   "source_column": "water_level_cm",
+   "target_column": "water_level_cm",
+   "data_type": "double",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "GV_IOT_SENSOR_READINGS",
+   "column_order": 3,
+   "source_column": "traffic_count",
+   "target_column": "traffic_count",
+   "data_type": "double",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "GV_IOT_SENSOR_READINGS",
+   "column_order": 4,
+   "source_column": "pm25_ugm3",
+   "target_column": "pm25_ugm3",
+   "data_type": "double",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "GV_CRM_CITIZENS",
+   "column_order": 0,
+   "source_column": "Id",
+   "target_column": "citizen_id",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "GV_CRM_CITIZENS",
+   "column_order": 1,
+   "source_column": "FirstName",
+   "target_column": "first_name",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "drop",
+   "sensitivity": "Confidential",
+   "description": ""
+  },
+  {
+   "object_id": "GV_CRM_CITIZENS",
+   "column_order": 2,
+   "source_column": "LastName",
+   "target_column": "last_name",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "drop",
+   "sensitivity": "Confidential",
+   "description": ""
+  },
+  {
+   "object_id": "GV_CRM_CITIZENS",
+   "column_order": 3,
+   "source_column": "Email",
+   "target_column": "email_masked",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "mask_email",
+   "sensitivity": "Confidential",
+   "description": ""
+  },
+  {
+   "object_id": "GV_CRM_CITIZENS",
+   "column_order": 4,
+   "source_column": "MobilePhone",
+   "target_column": "mobile_masked",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "mask_phone",
+   "sensitivity": "Confidential",
+   "description": ""
+  },
+  {
+   "object_id": "GV_CRM_CITIZENS",
+   "column_order": 5,
+   "source_column": "Birthdate",
+   "target_column": "birth_year",
+   "data_type": "int",
+   "transform_expr": null,
+   "pii_treatment": "year_only",
+   "sensitivity": "Confidential",
+   "description": ""
+  },
+  {
+   "object_id": "GV_CRM_CITIZENS",
+   "column_order": 6,
+   "source_column": "MailingPostalCode",
+   "target_column": "postcode",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "GV_CRM_CITIZENS",
+   "column_order": 7,
+   "source_column": "District__c",
+   "target_column": "district",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "GV_CRM_CITIZENS",
+   "column_order": 8,
+   "source_column": "CitizenType__c",
+   "target_column": "citizen_type",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "GV_CRM_CITIZENS",
+   "column_order": 9,
+   "source_column": "AssetId__c",
+   "target_column": "asset_id",
+   "data_type": "int",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "GV_CRM_CITIZENS",
+   "column_order": 10,
+   "source_column": "Status__c",
+   "target_column": "status",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "GV_CRM_CITIZENS",
+   "column_order": 11,
+   "source_column": "ConcessionCardNo__c",
+   "target_column": "concession_card_no_hash",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "hash",
+   "sensitivity": "Restricted",
+   "description": ""
+  },
+  {
+   "object_id": "GV_CRM_CITIZENS",
+   "column_order": 12,
+   "source_column": "LastModifiedDate",
+   "target_column": "last_modified_ts",
+   "data_type": "timestamp",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  }
+ ],
+ "dq_rule": [
+  {
+   "rule_id": "GV-ENT-01",
+   "object_id": "GV_AMS_PUBLIC_ASSETS",
+   "rule_name": "Public asset id present",
+   "rule_category": "technical",
+   "check_type": "not_null",
+   "column_name": "asset_id",
+   "params": "{}",
+   "severity": "fail",
+   "fail_threshold_pct": 0,
+   "rule_owner": "Data engineering",
+   "description": "Primary key must never be null",
+   "active": true
+  },
+  {
+   "rule_id": "GV-ENT-02",
+   "object_id": "GV_AMS_PUBLIC_ASSETS",
+   "rule_name": "Known asset_type",
+   "rule_category": "technical",
+   "check_type": "allowed_values",
+   "column_name": "asset_type",
+   "params": "{\"values\": [\"ROAD_SEGMENT\", \"BRIDGE\", \"PUBLIC_BUILDING\", \"STORMWATER_PIT\", \"STREETLIGHT\"]}",
+   "severity": "warn",
+   "fail_threshold_pct": null,
+   "rule_owner": "Data engineering",
+   "description": "Unknown classes are kept but flagged for the data owner",
+   "active": true
+  },
+  {
+   "rule_id": "GV-ENT-03",
+   "object_id": "GV_AMS_PUBLIC_ASSETS",
+   "rule_name": "criticality between 1 and 5",
+   "rule_category": "technical",
+   "check_type": "range",
+   "column_name": "criticality",
+   "params": "{\"min\": 1, \"max\": 5}",
+   "severity": "warn",
+   "fail_threshold_pct": null,
+   "rule_owner": "Data engineering",
+   "description": "Out-of-range ratings usually mean a keying error in the source",
+   "active": true
+  },
+  {
+   "rule_id": "GV-ENT-04",
+   "object_id": "GV_AMS_PUBLIC_ASSETS",
+   "rule_name": "Known status",
+   "rule_category": "business",
+   "check_type": "allowed_values",
+   "column_name": "status",
+   "params": "{\"values\": [\"IN_SERVICE\", \"UNDER_REPAIR\", \"CLOSED\", \"DISPOSED\"]}",
+   "severity": "warn",
+   "fail_threshold_pct": null,
+   "rule_owner": "Infrastructure Services",
+   "description": "Status list agreed with Infrastructure Services",
+   "active": true
+  },
+  {
+   "rule_id": "GV-EVT-01",
+   "object_id": "GV_AMS_CITIZEN_CASES",
+   "rule_name": "Citizen case id present",
+   "rule_category": "technical",
+   "check_type": "not_null",
+   "column_name": "case_id",
+   "params": "{}",
+   "severity": "fail",
+   "fail_threshold_pct": 0,
+   "rule_owner": "Data engineering",
+   "description": "Primary key must never be null",
+   "active": true
+  },
+  {
+   "rule_id": "GV-EVT-02",
+   "object_id": "GV_AMS_CITIZEN_CASES",
+   "rule_name": "Public asset exists",
+   "rule_category": "technical",
+   "check_type": "referential",
+   "column_name": "asset_id",
+   "params": "{\"ref_table\": \"silver.public_asset\", \"ref_column\": \"asset_id\"}",
+   "severity": "quarantine",
+   "fail_threshold_pct": null,
+   "rule_owner": "Data engineering",
+   "description": "Held until the public asset arrives (late-arriving reference data), then merged automatically",
+   "active": true
+  },
+  {
+   "rule_id": "GV-EVT-03",
+   "object_id": "GV_AMS_CITIZEN_CASES",
+   "rule_name": "Completed after lodged",
+   "rule_category": "business",
+   "check_type": "expression",
+   "column_name": null,
+   "params": "{\"expr\": \"completed_ts IS NULL OR completed_ts >= lodged_ts\"}",
+   "severity": "quarantine",
+   "fail_threshold_pct": null,
+   "rule_owner": "Citizen Services",
+   "description": "A citizen case can't be completed before it was lodged",
+   "active": true
+  },
+  {
+   "rule_id": "GV-EVT-04",
+   "object_id": "GV_AMS_CITIZEN_CASES",
+   "rule_name": "cost_aud not negative",
+   "rule_category": "technical",
+   "check_type": "range",
+   "column_name": "cost_aud",
+   "params": "{\"min\": 0}",
+   "severity": "warn",
+   "fail_threshold_pct": null,
+   "rule_owner": "Data engineering",
+   "description": "Negative values are sign errors in the source extract",
+   "active": true
+  },
+  {
+   "rule_id": "GV-EVT-05",
+   "object_id": "GV_AMS_CITIZEN_CASES",
+   "rule_name": "FLOOD_DRAINAGE is priority 1",
+   "rule_category": "business",
+   "check_type": "expression",
+   "column_name": null,
+   "params": "{\"expr\": \"case_type <> 'FLOOD_DRAINAGE' OR priority = 1\"}",
+   "severity": "warn",
+   "fail_threshold_pct": null,
+   "rule_owner": "Citizen Services",
+   "description": "Flooding and drainage citizen cases must be raised as priority 1",
+   "active": true
+  },
+  {
+   "rule_id": "GV-EVT-06",
+   "object_id": "GV_AMS_CITIZEN_CASES",
+   "rule_name": "lodged_ts parses",
+   "rule_category": "technical",
+   "check_type": "not_null",
+   "column_name": "lodged_ts",
+   "params": "{}",
+   "severity": "fail",
+   "fail_threshold_pct": 5,
+   "rule_owner": "Data engineering",
+   "description": "If more than 5% of timestamps fail to parse, the extract format has changed - stop the load",
+   "active": true
+  },
+  {
+   "rule_id": "GV-RDG-01",
+   "object_id": "GV_IOT_SENSOR_READINGS",
+   "rule_name": "Water level plausible",
+   "rule_category": "technical",
+   "check_type": "range",
+   "column_name": "water_level_cm",
+   "params": "{\"min\": 0, \"max\": 500}",
+   "severity": "quarantine",
+   "fail_threshold_pct": null,
+   "rule_owner": "Data engineering",
+   "description": "Sensor fault values (e.g. 999.9) are quarantined, never averaged into Gold",
+   "active": true
+  },
+  {
+   "rule_id": "GV-RDG-02",
+   "object_id": "GV_IOT_SENSOR_READINGS",
+   "rule_name": "Public asset known",
+   "rule_category": "technical",
+   "check_type": "referential",
+   "column_name": "asset_id",
+   "params": "{\"ref_table\": \"silver.public_asset\", \"ref_column\": \"asset_id\"}",
+   "severity": "warn",
+   "fail_threshold_pct": null,
+   "rule_owner": "Data engineering",
+   "description": "Readings for unknown tags are flagged",
+   "active": true
+  },
+  {
+   "rule_id": "GV-RDG-03",
+   "object_id": "GV_IOT_SENSOR_READINGS",
+   "rule_name": "Reading time parses",
+   "rule_category": "technical",
+   "check_type": "not_null",
+   "column_name": "reading_ts",
+   "params": "{}",
+   "severity": "fail",
+   "fail_threshold_pct": 5,
+   "rule_owner": "Data engineering",
+   "description": "Timestamp format change stops the load",
+   "active": true
+  },
+  {
+   "rule_id": "GV-PTY-01",
+   "object_id": "GV_CRM_CITIZENS",
+   "rule_name": "Citizen id present",
+   "rule_category": "technical",
+   "check_type": "not_null",
+   "column_name": "citizen_id",
+   "params": "{}",
+   "severity": "fail",
+   "fail_threshold_pct": 0,
+   "rule_owner": "Data engineering",
+   "description": "Primary key must never be null",
+   "active": true
+  },
+  {
+   "rule_id": "GV-PTY-02",
+   "object_id": "GV_CRM_CITIZENS",
+   "rule_name": "Email looks valid",
+   "rule_category": "technical",
+   "check_type": "regex",
+   "column_name": "email_masked",
+   "params": "{\"pattern\": \"^[^@\\\\s]+@[^@\\\\s]+\\\\.[^@\\\\s]+$\"}",
+   "severity": "warn",
+   "fail_threshold_pct": null,
+   "rule_owner": "Data engineering",
+   "description": "Checked on the raw value before masking",
+   "active": true
+  },
+  {
+   "rule_id": "GV-PTY-03",
+   "object_id": "GV_CRM_CITIZENS",
+   "rule_name": "Australian postcode",
+   "rule_category": "technical",
+   "check_type": "regex",
+   "column_name": "postcode",
+   "params": "{\"pattern\": \"^\\\\d{4}$\"}",
+   "severity": "warn",
+   "fail_threshold_pct": null,
+   "rule_owner": "Data engineering",
+   "description": "Four digits",
+   "active": true
+  },
+  {
+   "rule_id": "GV-PTY-04",
+   "object_id": "GV_CRM_CITIZENS",
+   "rule_name": "Known citizen_type",
+   "rule_category": "business",
+   "check_type": "allowed_values",
+   "column_name": "citizen_type",
+   "params": "{\"values\": [\"Resident\", \"Business\", \"Concession holder\", \"Visitor\"]}",
+   "severity": "warn",
+   "fail_threshold_pct": null,
+   "rule_owner": "Citizen Services",
+   "description": "Segments agreed with Citizen Services",
+   "active": true
+  }
+ ],
+ "gold_transform": [
+  {
+   "transform_id": "GV-G01",
+   "industry": "government",
+   "gold_table": "dim_date",
+   "run_order": 100,
+   "sql_text": "SELECT CAST(date_format(d, 'yyyyMMdd') AS INT) AS date_key, d AS calendar_date, year(d) AS calendar_year, quarter(d) AS calendar_quarter, month(d) AS month_number, date_format(d, 'MMM') AS month_name, date_format(d, 'yyyy-MM') AS year_month, dayofmonth(d) AS day_of_month, date_format(d, 'EEE') AS day_name, CASE WHEN month(d) >= 7 THEN year(d) + 1 ELSE year(d) END AS fy_year, concat('FY', substring(CAST(CASE WHEN month(d) >= 7 THEN year(d) + 1 ELSE year(d) END AS STRING), 3, 2)) AS fy_label, CASE WHEN dayofweek(d) IN (1, 7) THEN true ELSE false END AS is_weekend FROM (SELECT explode(sequence(to_date('2020-01-01'), to_date('2028-12-31'), interval 1 day)) AS d) dates",
+   "description": "Calendar with Australian financial year",
+   "business_owner": "Data engineering",
+   "consumers": "Power BI / Direct Lake, data agent",
+   "active": true
+  },
+  {
+   "transform_id": "GV-G02",
+   "industry": "government",
+   "gold_table": "dim_public_asset",
+   "run_order": 110,
+   "sql_text": "SELECT asset_id, asset_ref, asset_name, asset_type, district, status, criticality, replacement_value_kaud, constructed_date, CAST(floor(months_between(current_date(), constructed_date) / 12) AS INT) AS age_years, _valid_from AS version_valid_from FROM silver.public_asset WHERE _is_current = true",
+   "description": "Current view of the public asset register (history stays in Silver SCD2)",
+   "business_owner": "Infrastructure Services",
+   "consumers": "Power BI / Direct Lake, data agent",
+   "active": true
+  },
+  {
+   "transform_id": "GV-G03",
+   "industry": "government",
+   "gold_table": "fact_citizen_case",
+   "run_order": 120,
+   "sql_text": "SELECT v.case_id, v.asset_id, v.case_type, v.priority, v.status, v.lodged_ts, v.completed_ts, to_date(v.lodged_ts) AS opened_date, CAST(date_format(v.lodged_ts, 'yyyyMMdd') AS INT) AS opened_date_key, ROUND((unix_timestamp(v.completed_ts) - unix_timestamp(v.lodged_ts)) / 3600.0, 2) AS hours_to_close, CASE WHEN v.status IN ('LODGED', 'ASSIGNED') THEN 1 ELSE 0 END AS is_open, v.cost_aud, v.crew_hours, d.district, d.asset_type, d.criticality FROM silver.citizen_case v LEFT JOIN silver.public_asset d ON d.asset_id = v.asset_id AND d._is_current = true WHERE v._is_deleted = false",
+   "description": "Citizen cases with duration and public asset attributes",
+   "business_owner": "Citizen Services",
+   "consumers": "Power BI / Direct Lake, data agent",
+   "active": true
+  },
+  {
+   "transform_id": "GV-G04",
+   "industry": "government",
+   "gold_table": "fact_sensor_hourly",
+   "run_order": 130,
+   "sql_text": "SELECT asset_id, date_trunc('HOUR', reading_ts) AS reading_hour, to_date(reading_ts) AS reading_date, CAST(date_format(reading_ts, 'yyyyMMdd') AS INT) AS reading_date_key, COUNT(*) AS readings, ROUND(AVG(water_level_cm), 2) AS avg_water_level_cm, ROUND(MAX(water_level_cm), 2) AS max_water_level_cm, ROUND(AVG(traffic_count), 2) AS avg_traffic_count, ROUND(AVG(pm25_ugm3), 2) AS avg_pm25_ugm3, SUM(CASE WHEN water_level_cm > 150 THEN 1 ELSE 0 END) AS breach_readings FROM silver.sensor_reading GROUP BY asset_id, date_trunc('HOUR', reading_ts), to_date(reading_ts), CAST(date_format(reading_ts, 'yyyyMMdd') AS INT)",
+   "description": "Hourly smart infrastructure sensor readings with threshold breaches",
+   "business_owner": "Smart Infrastructure",
+   "consumers": "Power BI / Direct Lake, data agent",
+   "active": true
+  },
+  {
+   "transform_id": "GV-G05",
+   "industry": "government",
+   "gold_table": "public_asset_health_scorecard",
+   "run_order": 200,
+   "sql_text": "WITH asat AS (SELECT MAX(to_date(lodged_ts)) AS as_at FROM silver.citizen_case), ev AS (SELECT v.asset_id, COUNT(*) AS citizen_cases_12m, SUM(CASE WHEN v.status IN ('LODGED', 'ASSIGNED') THEN 1 ELSE 0 END) AS open_citizen_cases, SUM(CASE WHEN v.case_type = 'FLOOD_DRAINAGE' THEN 1 ELSE 0 END) AS urgent_citizen_cases_12m, ROUND(SUM(v.cost_aud), 2) AS cost_aud_12m FROM silver.citizen_case v CROSS JOIN asat WHERE v._is_deleted = false AND to_date(v.lodged_ts) > add_months(asat.as_at, -12) GROUP BY v.asset_id), rd AS (SELECT asset_id, MAX(water_level_cm) AS max_water_level_cm, SUM(CASE WHEN water_level_cm > 150 THEN 1 ELSE 0 END) AS breach_readings FROM silver.sensor_reading GROUP BY asset_id), s AS (SELECT d.asset_id, d.asset_ref, d.asset_name, d.asset_type, d.district, d.status, d.criticality, COALESCE(ev.citizen_cases_12m, 0) AS citizen_cases_12m, COALESCE(ev.open_citizen_cases, 0) AS open_citizen_cases, COALESCE(ev.urgent_citizen_cases_12m, 0) AS urgent_citizen_cases_12m, COALESCE(ev.cost_aud_12m, 0) AS cost_aud_12m, rd.max_water_level_cm, COALESCE(rd.breach_readings, 0) AS breach_readings, d.replacement_value_kaud FROM silver.public_asset d LEFT JOIN ev ON ev.asset_id = d.asset_id LEFT JOIN rd ON rd.asset_id = d.asset_id WHERE d._is_current = true) SELECT s.*, ROUND(LEAST(100, COALESCE(s.criticality, 1) * 8 + s.open_citizen_cases * 6 + s.urgent_citizen_cases_12m * 4 + LEAST(s.breach_readings, 20) * 1.5), 1) AS risk_score, CASE WHEN LEAST(100, COALESCE(s.criticality, 1) * 8 + s.open_citizen_cases * 6 + s.urgent_citizen_cases_12m * 4 + LEAST(s.breach_readings, 20) * 1.5) >= 60 THEN 'High' WHEN LEAST(100, COALESCE(s.criticality, 1) * 8 + s.open_citizen_cases * 6 + s.urgent_citizen_cases_12m * 4 + LEAST(s.breach_readings, 20) * 1.5) >= 35 THEN 'Medium' ELSE 'Low' END AS risk_band, ROUND(s.open_citizen_cases * 2500 + LEAST(s.breach_readings, 20) * 1200 + COALESCE(s.replacement_value_kaud, 0) * COALESCE(s.criticality, 1) * 0.5, 0) AS cost_at_risk_aud FROM s",
+   "description": "Public asset risk score - citizen cases, urgent work and water level breaches, plus cost at risk in AUD (weights and dollar rates are illustrative: $2,500 per open case + $1,200 per 15-min window above the water-level threshold + replacement value (k) x criticality x $0.50)",
+   "business_owner": "Infrastructure Services",
+   "consumers": "Power BI / Direct Lake, data agent",
+   "active": true
+  },
+  {
+   "transform_id": "GV-G06",
+   "industry": "government",
+   "gold_table": "citizen_summary",
+   "run_order": 210,
+   "sql_text": "SELECT district, citizen_type, COUNT(*) AS citizens, SUM(CASE WHEN status = 'Active' THEN 1 ELSE 0 END) AS active_citizens, ROUND(AVG(year(current_date()) - birth_year), 1) AS avg_age, COUNT(DISTINCT asset_id) AS linked_public_assets FROM silver.citizen WHERE _is_deleted = false GROUP BY district, citizen_type",
+   "description": "Citizens by district and citizen_type",
+   "business_owner": "Citizen Services",
+   "consumers": "Power BI / Direct Lake, data agent",
+   "active": true
+  }
+ ],
+ "onboard": {
+  "object": {
+   "object_id": "GV_IOT_RAINFALL",
+   "industry": "government",
+   "source_system": "iot",
+   "source_object": "rainfall",
+   "source_type": "file",
+   "ingest_method": "landed_file",
+   "landing_format": "txt",
+   "landing_path": "landing/iot/rainfall",
+   "read_options": "{\"header\": true, \"delimiter\": \"|\"}",
+   "source_table": null,
+   "load_type": "incremental",
+   "watermark_column": null,
+   "primary_keys": "district,obs_date",
+   "dedupe_order_by": "_ingested_at DESC",
+   "bronze_table": "iot_rainfall",
+   "silver_table": "rainfall_daily",
+   "silver_write_mode": "merge_scd1",
+   "load_group": "reference",
+   "priority": 25,
+   "sla_hours": 26,
+   "data_owner": "Emergency Management",
+   "sensitivity": "Public",
+   "active": true,
+   "description": "Daily BoM rainfall by district (pipe-delimited, dd/MM/yyyy) - onboarded live in the demo",
+   "fabric_alternative": "Public or partner feed - could be a REST copy, or a shortcut if the provider shares a folder"
+  },
+  "columns": [
+   [
+    "district",
+    "district",
+    "string",
+    null
+   ],
+   [
+    "obs_date",
+    "obs_date",
+    "date",
+    "to_date(obs_date, 'dd/MM/yyyy')"
+   ],
+   [
+    "rainfall_mm",
+    "rainfall_mm",
+    "double",
+    null
+   ],
+   [
+    "max_gust_kmh",
+    "max_gust_kmh",
+    "double",
+    null
+   ],
+   [
+    "river_height_m",
+    "river_height_m",
+    "double",
+    null
+   ],
+   [
+    "warning_level",
+    "warning_level",
+    "string",
+    null
+   ]
+  ],
+  "rules": [
+   [
+    "GV-EXT-01",
+    "rainfall_mm plausible",
+    "technical",
+    "range",
+    "rainfall_mm",
+    "{\"min\": 0, \"max\": 500}",
+    "warn"
+   ],
+   [
+    "GV-EXT-02",
+    "Known warning_level",
+    "business",
+    "allowed_values",
+    "warning_level",
+    "{\"values\": [\"None\", \"Advice\", \"Watch and act\", \"Emergency\"]}",
+    "warn"
+   ]
+  ],
+  "gold": {
+   "transform_id": "GV-G07",
+   "industry": "government",
+   "gold_table": "citizen_case_vs_rainfall_daily",
+   "run_order": 220,
+   "sql_text": "WITH ev AS (SELECT d.district, to_date(v.lodged_ts) AS obs_date, COUNT(*) AS citizen_cases, SUM(CASE WHEN v.case_type = 'FLOOD_DRAINAGE' THEN 1 ELSE 0 END) AS urgent_citizen_cases FROM silver.citizen_case v JOIN silver.public_asset d ON d.asset_id = v.asset_id AND d._is_current = true WHERE v._is_deleted = false GROUP BY d.district, to_date(v.lodged_ts)) SELECT x.district, x.obs_date, x.rainfall_mm, x.max_gust_kmh, x.river_height_m, x.warning_level, COALESCE(ev.citizen_cases, 0) AS citizen_cases, COALESCE(ev.urgent_citizen_cases, 0) AS urgent_citizen_cases FROM silver.rainfall_daily x LEFT JOIN ev ON ev.district = x.district AND ev.obs_date = x.obs_date WHERE x._is_deleted = false",
+   "description": "Rainfall and river height against flooding cases by district",
+   "business_owner": "Emergency Management",
+   "consumers": "Power BI / Direct Lake",
+   "active": true
+  }
+ }
+}

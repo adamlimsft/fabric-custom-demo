@@ -1,0 +1,1306 @@
+{
+ "pack": {
+  "id": "ites",
+  "industry": "IT & ITeS",
+  "org": "Bluegum Digital Services",
+  "short": "BDS",
+  "prefix": "IT",
+  "tagline": "IT services provider running managed services for enterprise clients",
+  "email_domain": "bluegum.example.com.au",
+  "region_col": "delivery_centre",
+  "region_label": "delivery centre",
+  "regions": [
+   "Sydney",
+   "Melbourne",
+   "Brisbane",
+   "Bengaluru",
+   "Manila",
+   "Auckland"
+  ],
+  "name_words": [
+   "Kookaburra Bank",
+   "Southern Rail",
+   "Coastal Health",
+   "Metro Water",
+   "Outback Mining",
+   "Harbour Insurance",
+   "Summit Retail",
+   "Banksia Uni",
+   "Gumtree Logistics",
+   "Redgum Energy"
+  ],
+  "sys": {
+   "ops": {
+    "code": "itsm",
+    "name": "ITSM and service catalogue database (on-prem SQL Server)",
+    "type": "Database",
+    "owner": "Service Management",
+    "fabric": "Mirroring for SQL Server vs Copy job incremental; ServiceNow connector if SaaS"
+   },
+   "tel": {
+    "code": "mon",
+    "name": "Service-level monitoring exports (15-min CSV) and change calendar",
+    "type": "File drop",
+    "owner": "Service Assurance",
+    "fabric": "Eventstream from Azure Monitor / Event Hubs; Azure Monitor logs via KQL"
+   },
+   "crm": {
+    "code": "hub",
+    "name": "HubSpot CRM (client contacts)",
+    "type": "SaaS CRM",
+    "owner": "Client Services",
+    "fabric": "Copy job / pipeline with the REST connector"
+   }
+  },
+  "entity": {
+   "table": "client_service",
+   "src": "client_services",
+   "label": "client service",
+   "plural": "client services",
+   "id": "service_id",
+   "code": "contract_ref",
+   "code_prefix": "MSA",
+   "name_col": "service_name",
+   "type_col": "service_line",
+   "types": [
+    "MANAGED_INFRA",
+    "APP_SUPPORT",
+    "CLOUD_OPS",
+    "SERVICE_DESK",
+    "SECURITY_OPS"
+   ],
+   "status": [
+    "LIVE",
+    "AT_RISK",
+    "IN_TRANSITION",
+    "EXITED"
+   ],
+   "tier_col": "sla_tier",
+   "tier_label": "SLA tier (1-5, 5 = platinum)",
+   "cap_col": "monthly_fee_aud",
+   "cap_label": "monthly contract fee (AUD)",
+   "cap_range": [
+    8000,
+    450000
+   ],
+   "start_col": "contract_start",
+   "start_years": [
+    2015,
+    2025
+   ],
+   "drift_col": "delivery_lead",
+   "drift_values": [
+    "Delivery Lead A",
+    "Delivery Lead B",
+    "Offshore Centre"
+   ],
+   "owner": "Service Delivery",
+   "count": 240
+  },
+  "event": {
+   "table": "incident",
+   "src": "incidents",
+   "label": "incident",
+   "plural": "incidents",
+   "id": "incident_id",
+   "id_start": 400001,
+   "type_col": "category",
+   "types": [
+    "OUTAGE",
+    "PERFORMANCE",
+    "SECURITY",
+    "REQUEST"
+   ],
+   "type_names": [
+    "Outage",
+    "Performance",
+    "Security",
+    "Service request"
+   ],
+   "urgent_type": "OUTAGE",
+   "status": [
+    "NEW",
+    "IN_PROGRESS",
+    "RESOLVED",
+    "CANCELLED"
+   ],
+   "open_ts": "opened_ts",
+   "close_ts": "resolved_ts",
+   "open_verb": "opened",
+   "close_verb": "resolved",
+   "amount_col": "sla_penalty_aud",
+   "amount_range": [
+    0,
+    25000
+   ],
+   "qty_col": "effort_hours",
+   "qty_range": [
+    0.25,
+    60
+   ],
+   "descriptions": [
+    "Disk full on data volume",
+    "TLS certificate expired",
+    "Slow page loads",
+    "Suspicious sign-in",
+    "Password reset",
+    "Failed backup job",
+    "Memory leak after deploy",
+    "VPN tunnel down"
+   ],
+   "owner": "Service Delivery"
+  },
+  "reading": {
+   "table": "service_metric",
+   "src": "service_metrics",
+   "label": "service performance (15-min)",
+   "fact": "service_perf",
+   "monitored": 24,
+   "monitored_types": [
+    "MANAGED_INFRA",
+    "APP_SUPPORT",
+    "CLOUD_OPS"
+   ],
+   "metrics": [
+    {
+     "col": "p95_response_ms",
+     "label": "p95 response time",
+     "unit": "ms",
+     "base": 900,
+     "sd": 300,
+     "min": 0,
+     "max": 120000,
+     "threshold": 2500
+    },
+    {
+     "col": "availability_pct",
+     "label": "availability",
+     "unit": "%",
+     "base": 99.8,
+     "sd": 0.15,
+     "min": 0,
+     "max": 100
+    },
+    {
+     "col": "ticket_backlog",
+     "label": "ticket backlog",
+     "unit": "tickets",
+     "base": 25,
+     "sd": 10,
+     "min": 0,
+     "max": 10000
+    }
+   ],
+   "sentinel": -1,
+   "owner": "Service Assurance"
+  },
+  "party": {
+   "table": "client_contact",
+   "src": "client_contacts",
+   "label": "client contact",
+   "plural": "client contacts",
+   "id": "contact_id",
+   "id_prefix": "CC",
+   "sf_type": "contact",
+   "segment_col": "contact_role",
+   "segments": [
+    "Executive sponsor",
+    "Service owner",
+    "IT manager",
+    "Procurement"
+   ],
+   "status": [
+    "Active",
+    "Left company"
+   ],
+   "sensitive_col": "personal_mobile_2",
+   "sensitive_label": "secondary mobile",
+   "sensitive_treatment": "drop",
+   "owner": "Client Services",
+   "count": 300
+  },
+  "extra": {
+   "table": "change_window",
+   "src": "change_calendar",
+   "label": "change calendar",
+   "sys": "tel",
+   "cols": [
+    {
+     "col": "changes_scheduled",
+     "base": 12,
+     "sd": 5,
+     "min": 0,
+     "max": 500
+    },
+    {
+     "col": "emergency_changes",
+     "base": 1,
+     "sd": 1,
+     "min": 0,
+     "max": 100
+    },
+    {
+     "col": "patching_hours",
+     "base": 3,
+     "sd": 2,
+     "min": 0,
+     "max": 24
+    }
+   ],
+   "cat_col": "change_risk",
+   "cat_values": [
+    "Low",
+    "Medium",
+    "High",
+    "Freeze"
+   ],
+   "owner": "Change Management",
+   "story": "change volume against incidents by delivery centre"
+  },
+  "alert": {
+   "stream": "sla_alert",
+   "label": "SLA alert",
+   "codes": [
+    "SLA_RESPONSE_BREACH",
+    "HOST_DOWN",
+    "CERT_EXPIRY"
+   ],
+   "storm": "failed deployment"
+  },
+  "ref": {
+   "title": "Incident resolution SLAs",
+   "owner": "Service Delivery",
+   "rows": [
+    [
+     "OUTAGE",
+     "P1",
+     4,
+     "Major Incident"
+    ],
+    [
+     "PERFORMANCE",
+     "P2",
+     12,
+     "Service Assurance"
+    ],
+    [
+     "SECURITY",
+     "P1",
+     8,
+     "Security Operations"
+    ],
+    [
+     "REQUEST",
+     "P4",
+     72,
+     "Service Desk"
+    ]
+   ]
+  },
+  "impact": {
+   "col": "revenue_at_risk_aud",
+   "label": "contract revenue at risk",
+   "open_cost": 2000,
+   "breach_cost": 500,
+   "cap_rate": 0.01,
+   "rule": "$2,000 SLA penalty exposure per open incident + $500 per slow 15-min window + monthly fee x SLA tier x 1%"
+  },
+  "ai": {
+   "persona": "service delivery, SLA and account management",
+   "cust": "IT services providers, managed service providers and internal IT teams",
+   "q_model": [
+    "Which delivery centre had the most outages this month?",
+    "Show SLA penalties by incident category and month.",
+    "Which platinum client services (SLA tier 4 or 5) have open incidents?"
+   ],
+   "q_agent": [
+    "Which 10 client services have the most contract revenue at risk, and how many open incidents does each have?",
+    "Compare average hours to resolve outages by delivery centre.",
+    "Which client services had p95 response time above 2500 ms in the last 3 days?",
+    "How much have we paid in SLA penalties for security incidents?",
+    "Which service lines carry the most monthly fee in the High risk band?"
+   ],
+   "q_onto": [
+    "Show managed infrastructure services delivered from Bengaluru with an open outage and a high risk band.",
+    "For the client service with the worst response time, list its incidents and the client contacts behind it.",
+    "Which executive sponsors are linked to client services that are at risk?"
+   ]
+  }
+ },
+ "source_system": [
+  {
+   "source_system": "itsm",
+   "industry": "ites",
+   "display_name": "ITSM and service catalogue database (on-prem SQL Server)",
+   "system_type": "Database",
+   "connection_pattern": "On-premises data gateway -> pipeline Copy with watermark query",
+   "technical_owner": "Service Management",
+   "fabric_options": "Mirroring for SQL Server vs Copy job incremental; ServiceNow connector if SaaS"
+  },
+  {
+   "source_system": "mon",
+   "industry": "ites",
+   "display_name": "Service-level monitoring exports (15-min CSV) and change calendar",
+   "system_type": "File drop",
+   "connection_pattern": "Files dropped to OneLake (Files/landing) every 15 minutes",
+   "technical_owner": "Service Assurance",
+   "fabric_options": "Eventstream from Azure Monitor / Event Hubs; Azure Monitor logs via KQL"
+  },
+  {
+   "source_system": "hub",
+   "industry": "ites",
+   "display_name": "HubSpot CRM (client contacts)",
+   "system_type": "SaaS CRM",
+   "connection_pattern": "REST/OData API -> JSON landed per day",
+   "technical_owner": "Client Services",
+   "fabric_options": "Copy job / pipeline with the REST connector"
+  }
+ ],
+ "ingestion_object": [
+  {
+   "object_id": "IT_ITSM_CLIENT_SERVICES",
+   "industry": "ites",
+   "source_system": "itsm",
+   "source_object": "client_services",
+   "source_type": "database",
+   "ingest_method": "copy_db",
+   "landing_format": "csv",
+   "landing_path": "landing/itsm/client_services",
+   "read_options": "{\"header\": true, \"delimiter\": \",\"}",
+   "source_table": "src.client_services",
+   "load_type": "incremental",
+   "watermark_column": "last_modified",
+   "primary_keys": "service_id",
+   "dedupe_order_by": "last_modified DESC, _ingested_at DESC",
+   "bronze_table": "itsm_client_services",
+   "silver_table": "client_service",
+   "silver_write_mode": "merge_scd2",
+   "load_group": "reference",
+   "priority": 10,
+   "sla_hours": 26,
+   "data_owner": "Service Delivery",
+   "sensitivity": "Internal",
+   "active": true,
+   "description": "Client service register. SCD2 keeps status, sla_tier and monthly_fee_aud history.",
+   "fabric_alternative": "Strong mirroring candidate - small, slowly changing, needed in near real time by operations"
+  },
+  {
+   "object_id": "IT_ITSM_INCIDENTS",
+   "industry": "ites",
+   "source_system": "itsm",
+   "source_object": "incidents",
+   "source_type": "database",
+   "ingest_method": "copy_db",
+   "landing_format": "csv",
+   "landing_path": "landing/itsm/incidents",
+   "read_options": "{\"header\": true, \"delimiter\": \",\"}",
+   "source_table": "src.incidents",
+   "load_type": "incremental",
+   "watermark_column": "last_modified",
+   "primary_keys": "incident_id",
+   "dedupe_order_by": "last_modified DESC, _ingested_at DESC",
+   "bronze_table": "itsm_incidents",
+   "silver_table": "incident",
+   "silver_write_mode": "merge_scd1",
+   "load_group": "transactional",
+   "priority": 20,
+   "sla_hours": 26,
+   "data_owner": "Service Delivery",
+   "sensitivity": "Internal",
+   "active": true,
+   "description": "Incidents - incremental by last_modified; can arrive before their client service (late-arriving).",
+   "fabric_alternative": "Copy job incremental or mirroring; keep the watermark query if the source is on-prem"
+  },
+  {
+   "object_id": "IT_MON_SERVICE_METRICS",
+   "industry": "ites",
+   "source_system": "mon",
+   "source_object": "service_metrics",
+   "source_type": "file",
+   "ingest_method": "landed_file",
+   "landing_format": "csv",
+   "landing_path": "landing/mon/service_metrics",
+   "read_options": "{\"header\": true, \"delimiter\": \",\"}",
+   "source_table": null,
+   "load_type": "incremental",
+   "watermark_column": null,
+   "primary_keys": "service_id,reading_ts",
+   "dedupe_order_by": "_ingested_at DESC",
+   "bronze_table": "mon_service_metrics",
+   "silver_table": "service_metric",
+   "silver_write_mode": "insert_only",
+   "load_group": "telemetry",
+   "priority": 30,
+   "sla_hours": 2,
+   "data_owner": "Service Assurance",
+   "sensitivity": "Internal",
+   "active": true,
+   "description": "Service performance (15-min) every 15 minutes, four micro-batch files a day. Insert-only and idempotent.",
+   "fabric_alternative": "Eventstream into Eventhouse for real time; keep this batch path for history and reconciliation"
+  },
+  {
+   "object_id": "IT_HUB_CLIENT_CONTACTS",
+   "industry": "ites",
+   "source_system": "hub",
+   "source_object": "client_contacts",
+   "source_type": "api",
+   "ingest_method": "landed_file",
+   "landing_format": "json",
+   "landing_path": "landing/hub/client_contacts",
+   "read_options": "{\"multiline\": true, \"json_root\": \"records\"}",
+   "source_table": null,
+   "load_type": "full",
+   "watermark_column": null,
+   "primary_keys": "contact_id",
+   "dedupe_order_by": "last_modified_ts DESC, _ingested_at DESC",
+   "bronze_table": "hub_client_contacts",
+   "silver_table": "client_contact",
+   "silver_write_mode": "merge_scd1",
+   "load_group": "reference",
+   "priority": 15,
+   "sla_hours": 26,
+   "data_owner": "Client Services",
+   "sensitivity": "Confidential",
+   "active": true,
+   "description": "Client contacts - full daily snapshot from the CRM API (contains PII). Missing rows are soft-deleted.",
+   "fabric_alternative": "Copy job with the CRM connector; Dataverse-based CRMs can use Link to Fabric instead of copying"
+  }
+ ],
+ "column_map": [
+  {
+   "object_id": "IT_ITSM_CLIENT_SERVICES",
+   "column_order": 0,
+   "source_column": "service_id",
+   "target_column": "service_id",
+   "data_type": "int",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "IT_ITSM_CLIENT_SERVICES",
+   "column_order": 1,
+   "source_column": "contract_ref",
+   "target_column": "contract_ref",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "IT_ITSM_CLIENT_SERVICES",
+   "column_order": 2,
+   "source_column": "service_name",
+   "target_column": "service_name",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "IT_ITSM_CLIENT_SERVICES",
+   "column_order": 3,
+   "source_column": "service_line",
+   "target_column": "service_line",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "IT_ITSM_CLIENT_SERVICES",
+   "column_order": 4,
+   "source_column": "delivery_centre",
+   "target_column": "delivery_centre",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "IT_ITSM_CLIENT_SERVICES",
+   "column_order": 5,
+   "source_column": "status",
+   "target_column": "status",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "IT_ITSM_CLIENT_SERVICES",
+   "column_order": 6,
+   "source_column": "sla_tier",
+   "target_column": "sla_tier",
+   "data_type": "int",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "IT_ITSM_CLIENT_SERVICES",
+   "column_order": 7,
+   "source_column": "monthly_fee_aud",
+   "target_column": "monthly_fee_aud",
+   "data_type": "double",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "IT_ITSM_CLIENT_SERVICES",
+   "column_order": 8,
+   "source_column": "contract_start",
+   "target_column": "contract_start",
+   "data_type": "date",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "IT_ITSM_CLIENT_SERVICES",
+   "column_order": 9,
+   "source_column": "last_modified",
+   "target_column": "last_modified",
+   "data_type": "timestamp",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "IT_ITSM_INCIDENTS",
+   "column_order": 0,
+   "source_column": "incident_id",
+   "target_column": "incident_id",
+   "data_type": "int",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "IT_ITSM_INCIDENTS",
+   "column_order": 1,
+   "source_column": "service_id",
+   "target_column": "service_id",
+   "data_type": "int",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "IT_ITSM_INCIDENTS",
+   "column_order": 2,
+   "source_column": "category",
+   "target_column": "category",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "IT_ITSM_INCIDENTS",
+   "column_order": 3,
+   "source_column": "priority",
+   "target_column": "priority",
+   "data_type": "int",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "IT_ITSM_INCIDENTS",
+   "column_order": 4,
+   "source_column": "status",
+   "target_column": "status",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "IT_ITSM_INCIDENTS",
+   "column_order": 5,
+   "source_column": "opened_ts",
+   "target_column": "opened_ts",
+   "data_type": "timestamp",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "IT_ITSM_INCIDENTS",
+   "column_order": 6,
+   "source_column": "resolved_ts",
+   "target_column": "resolved_ts",
+   "data_type": "timestamp",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "IT_ITSM_INCIDENTS",
+   "column_order": 7,
+   "source_column": "sla_penalty_aud",
+   "target_column": "sla_penalty_aud",
+   "data_type": "decimal(12,2)",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "IT_ITSM_INCIDENTS",
+   "column_order": 8,
+   "source_column": "effort_hours",
+   "target_column": "effort_hours",
+   "data_type": "double",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "IT_ITSM_INCIDENTS",
+   "column_order": 9,
+   "source_column": "description",
+   "target_column": "description",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "IT_ITSM_INCIDENTS",
+   "column_order": 10,
+   "source_column": "last_modified",
+   "target_column": "last_modified",
+   "data_type": "timestamp",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "IT_MON_SERVICE_METRICS",
+   "column_order": 0,
+   "source_column": "service_id",
+   "target_column": "service_id",
+   "data_type": "int",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "IT_MON_SERVICE_METRICS",
+   "column_order": 1,
+   "source_column": "reading_time",
+   "target_column": "reading_ts",
+   "data_type": "timestamp",
+   "transform_expr": "to_timestamp(reading_time, 'dd/MM/yyyy HH:mm')",
+   "pii_treatment": "none",
+   "sensitivity": "none",
+   "description": ""
+  },
+  {
+   "object_id": "IT_MON_SERVICE_METRICS",
+   "column_order": 2,
+   "source_column": "p95_response_ms",
+   "target_column": "p95_response_ms",
+   "data_type": "double",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "IT_MON_SERVICE_METRICS",
+   "column_order": 3,
+   "source_column": "availability_pct",
+   "target_column": "availability_pct",
+   "data_type": "double",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "IT_MON_SERVICE_METRICS",
+   "column_order": 4,
+   "source_column": "ticket_backlog",
+   "target_column": "ticket_backlog",
+   "data_type": "double",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "IT_HUB_CLIENT_CONTACTS",
+   "column_order": 0,
+   "source_column": "Id",
+   "target_column": "contact_id",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "IT_HUB_CLIENT_CONTACTS",
+   "column_order": 1,
+   "source_column": "FirstName",
+   "target_column": "first_name",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "drop",
+   "sensitivity": "Confidential",
+   "description": ""
+  },
+  {
+   "object_id": "IT_HUB_CLIENT_CONTACTS",
+   "column_order": 2,
+   "source_column": "LastName",
+   "target_column": "last_name",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "drop",
+   "sensitivity": "Confidential",
+   "description": ""
+  },
+  {
+   "object_id": "IT_HUB_CLIENT_CONTACTS",
+   "column_order": 3,
+   "source_column": "Email",
+   "target_column": "email_masked",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "mask_email",
+   "sensitivity": "Confidential",
+   "description": ""
+  },
+  {
+   "object_id": "IT_HUB_CLIENT_CONTACTS",
+   "column_order": 4,
+   "source_column": "MobilePhone",
+   "target_column": "mobile_masked",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "mask_phone",
+   "sensitivity": "Confidential",
+   "description": ""
+  },
+  {
+   "object_id": "IT_HUB_CLIENT_CONTACTS",
+   "column_order": 5,
+   "source_column": "Birthdate",
+   "target_column": "birth_year",
+   "data_type": "int",
+   "transform_expr": null,
+   "pii_treatment": "year_only",
+   "sensitivity": "Confidential",
+   "description": ""
+  },
+  {
+   "object_id": "IT_HUB_CLIENT_CONTACTS",
+   "column_order": 6,
+   "source_column": "MailingPostalCode",
+   "target_column": "postcode",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "IT_HUB_CLIENT_CONTACTS",
+   "column_order": 7,
+   "source_column": "DeliveryCentre__c",
+   "target_column": "delivery_centre",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "IT_HUB_CLIENT_CONTACTS",
+   "column_order": 8,
+   "source_column": "ContactRole__c",
+   "target_column": "contact_role",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "IT_HUB_CLIENT_CONTACTS",
+   "column_order": 9,
+   "source_column": "ServiceId__c",
+   "target_column": "service_id",
+   "data_type": "int",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "IT_HUB_CLIENT_CONTACTS",
+   "column_order": 10,
+   "source_column": "Status__c",
+   "target_column": "status",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "IT_HUB_CLIENT_CONTACTS",
+   "column_order": 11,
+   "source_column": "PersonalMobile2__c",
+   "target_column": "personal_mobile_2",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "drop",
+   "sensitivity": "Restricted",
+   "description": ""
+  },
+  {
+   "object_id": "IT_HUB_CLIENT_CONTACTS",
+   "column_order": 12,
+   "source_column": "LastModifiedDate",
+   "target_column": "last_modified_ts",
+   "data_type": "timestamp",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  }
+ ],
+ "dq_rule": [
+  {
+   "rule_id": "IT-ENT-01",
+   "object_id": "IT_ITSM_CLIENT_SERVICES",
+   "rule_name": "Client service id present",
+   "rule_category": "technical",
+   "check_type": "not_null",
+   "column_name": "service_id",
+   "params": "{}",
+   "severity": "fail",
+   "fail_threshold_pct": 0,
+   "rule_owner": "Data engineering",
+   "description": "Primary key must never be null",
+   "active": true
+  },
+  {
+   "rule_id": "IT-ENT-02",
+   "object_id": "IT_ITSM_CLIENT_SERVICES",
+   "rule_name": "Known service_line",
+   "rule_category": "technical",
+   "check_type": "allowed_values",
+   "column_name": "service_line",
+   "params": "{\"values\": [\"MANAGED_INFRA\", \"APP_SUPPORT\", \"CLOUD_OPS\", \"SERVICE_DESK\", \"SECURITY_OPS\"]}",
+   "severity": "warn",
+   "fail_threshold_pct": null,
+   "rule_owner": "Data engineering",
+   "description": "Unknown classes are kept but flagged for the data owner",
+   "active": true
+  },
+  {
+   "rule_id": "IT-ENT-03",
+   "object_id": "IT_ITSM_CLIENT_SERVICES",
+   "rule_name": "sla_tier between 1 and 5",
+   "rule_category": "technical",
+   "check_type": "range",
+   "column_name": "sla_tier",
+   "params": "{\"min\": 1, \"max\": 5}",
+   "severity": "warn",
+   "fail_threshold_pct": null,
+   "rule_owner": "Data engineering",
+   "description": "Out-of-range ratings usually mean a keying error in the source",
+   "active": true
+  },
+  {
+   "rule_id": "IT-ENT-04",
+   "object_id": "IT_ITSM_CLIENT_SERVICES",
+   "rule_name": "Known status",
+   "rule_category": "business",
+   "check_type": "allowed_values",
+   "column_name": "status",
+   "params": "{\"values\": [\"LIVE\", \"AT_RISK\", \"IN_TRANSITION\", \"EXITED\"]}",
+   "severity": "warn",
+   "fail_threshold_pct": null,
+   "rule_owner": "Service Delivery",
+   "description": "Status list agreed with Service Delivery",
+   "active": true
+  },
+  {
+   "rule_id": "IT-EVT-01",
+   "object_id": "IT_ITSM_INCIDENTS",
+   "rule_name": "Incident id present",
+   "rule_category": "technical",
+   "check_type": "not_null",
+   "column_name": "incident_id",
+   "params": "{}",
+   "severity": "fail",
+   "fail_threshold_pct": 0,
+   "rule_owner": "Data engineering",
+   "description": "Primary key must never be null",
+   "active": true
+  },
+  {
+   "rule_id": "IT-EVT-02",
+   "object_id": "IT_ITSM_INCIDENTS",
+   "rule_name": "Client service exists",
+   "rule_category": "technical",
+   "check_type": "referential",
+   "column_name": "service_id",
+   "params": "{\"ref_table\": \"silver.client_service\", \"ref_column\": \"service_id\"}",
+   "severity": "quarantine",
+   "fail_threshold_pct": null,
+   "rule_owner": "Data engineering",
+   "description": "Held until the client service arrives (late-arriving reference data), then merged automatically",
+   "active": true
+  },
+  {
+   "rule_id": "IT-EVT-03",
+   "object_id": "IT_ITSM_INCIDENTS",
+   "rule_name": "Resolved after opened",
+   "rule_category": "business",
+   "check_type": "expression",
+   "column_name": null,
+   "params": "{\"expr\": \"resolved_ts IS NULL OR resolved_ts >= opened_ts\"}",
+   "severity": "quarantine",
+   "fail_threshold_pct": null,
+   "rule_owner": "Service Delivery",
+   "description": "A incident can't be resolved before it was opened",
+   "active": true
+  },
+  {
+   "rule_id": "IT-EVT-04",
+   "object_id": "IT_ITSM_INCIDENTS",
+   "rule_name": "sla_penalty_aud not negative",
+   "rule_category": "technical",
+   "check_type": "range",
+   "column_name": "sla_penalty_aud",
+   "params": "{\"min\": 0}",
+   "severity": "warn",
+   "fail_threshold_pct": null,
+   "rule_owner": "Data engineering",
+   "description": "Negative values are sign errors in the source extract",
+   "active": true
+  },
+  {
+   "rule_id": "IT-EVT-05",
+   "object_id": "IT_ITSM_INCIDENTS",
+   "rule_name": "OUTAGE is priority 1",
+   "rule_category": "business",
+   "check_type": "expression",
+   "column_name": null,
+   "params": "{\"expr\": \"category <> 'OUTAGE' OR priority = 1\"}",
+   "severity": "warn",
+   "fail_threshold_pct": null,
+   "rule_owner": "Service Delivery",
+   "description": "Outage incidents must be raised as priority 1",
+   "active": true
+  },
+  {
+   "rule_id": "IT-EVT-06",
+   "object_id": "IT_ITSM_INCIDENTS",
+   "rule_name": "opened_ts parses",
+   "rule_category": "technical",
+   "check_type": "not_null",
+   "column_name": "opened_ts",
+   "params": "{}",
+   "severity": "fail",
+   "fail_threshold_pct": 5,
+   "rule_owner": "Data engineering",
+   "description": "If more than 5% of timestamps fail to parse, the extract format has changed - stop the load",
+   "active": true
+  },
+  {
+   "rule_id": "IT-RDG-01",
+   "object_id": "IT_MON_SERVICE_METRICS",
+   "rule_name": "P95 response time plausible",
+   "rule_category": "technical",
+   "check_type": "range",
+   "column_name": "p95_response_ms",
+   "params": "{\"min\": 0, \"max\": 120000}",
+   "severity": "quarantine",
+   "fail_threshold_pct": null,
+   "rule_owner": "Data engineering",
+   "description": "Sensor fault values (e.g. -1) are quarantined, never averaged into Gold",
+   "active": true
+  },
+  {
+   "rule_id": "IT-RDG-02",
+   "object_id": "IT_MON_SERVICE_METRICS",
+   "rule_name": "Client service known",
+   "rule_category": "technical",
+   "check_type": "referential",
+   "column_name": "service_id",
+   "params": "{\"ref_table\": \"silver.client_service\", \"ref_column\": \"service_id\"}",
+   "severity": "warn",
+   "fail_threshold_pct": null,
+   "rule_owner": "Data engineering",
+   "description": "Readings for unknown tags are flagged",
+   "active": true
+  },
+  {
+   "rule_id": "IT-RDG-03",
+   "object_id": "IT_MON_SERVICE_METRICS",
+   "rule_name": "Reading time parses",
+   "rule_category": "technical",
+   "check_type": "not_null",
+   "column_name": "reading_ts",
+   "params": "{}",
+   "severity": "fail",
+   "fail_threshold_pct": 5,
+   "rule_owner": "Data engineering",
+   "description": "Timestamp format change stops the load",
+   "active": true
+  },
+  {
+   "rule_id": "IT-PTY-01",
+   "object_id": "IT_HUB_CLIENT_CONTACTS",
+   "rule_name": "Client contact id present",
+   "rule_category": "technical",
+   "check_type": "not_null",
+   "column_name": "contact_id",
+   "params": "{}",
+   "severity": "fail",
+   "fail_threshold_pct": 0,
+   "rule_owner": "Data engineering",
+   "description": "Primary key must never be null",
+   "active": true
+  },
+  {
+   "rule_id": "IT-PTY-02",
+   "object_id": "IT_HUB_CLIENT_CONTACTS",
+   "rule_name": "Email looks valid",
+   "rule_category": "technical",
+   "check_type": "regex",
+   "column_name": "email_masked",
+   "params": "{\"pattern\": \"^[^@\\\\s]+@[^@\\\\s]+\\\\.[^@\\\\s]+$\"}",
+   "severity": "warn",
+   "fail_threshold_pct": null,
+   "rule_owner": "Data engineering",
+   "description": "Checked on the raw value before masking",
+   "active": true
+  },
+  {
+   "rule_id": "IT-PTY-03",
+   "object_id": "IT_HUB_CLIENT_CONTACTS",
+   "rule_name": "Australian postcode",
+   "rule_category": "technical",
+   "check_type": "regex",
+   "column_name": "postcode",
+   "params": "{\"pattern\": \"^\\\\d{4}$\"}",
+   "severity": "warn",
+   "fail_threshold_pct": null,
+   "rule_owner": "Data engineering",
+   "description": "Four digits",
+   "active": true
+  },
+  {
+   "rule_id": "IT-PTY-04",
+   "object_id": "IT_HUB_CLIENT_CONTACTS",
+   "rule_name": "Known contact_role",
+   "rule_category": "business",
+   "check_type": "allowed_values",
+   "column_name": "contact_role",
+   "params": "{\"values\": [\"Executive sponsor\", \"Service owner\", \"IT manager\", \"Procurement\"]}",
+   "severity": "warn",
+   "fail_threshold_pct": null,
+   "rule_owner": "Client Services",
+   "description": "Segments agreed with Client Services",
+   "active": true
+  }
+ ],
+ "gold_transform": [
+  {
+   "transform_id": "IT-G01",
+   "industry": "ites",
+   "gold_table": "dim_date",
+   "run_order": 100,
+   "sql_text": "SELECT CAST(date_format(d, 'yyyyMMdd') AS INT) AS date_key, d AS calendar_date, year(d) AS calendar_year, quarter(d) AS calendar_quarter, month(d) AS month_number, date_format(d, 'MMM') AS month_name, date_format(d, 'yyyy-MM') AS year_month, dayofmonth(d) AS day_of_month, date_format(d, 'EEE') AS day_name, CASE WHEN month(d) >= 7 THEN year(d) + 1 ELSE year(d) END AS fy_year, concat('FY', substring(CAST(CASE WHEN month(d) >= 7 THEN year(d) + 1 ELSE year(d) END AS STRING), 3, 2)) AS fy_label, CASE WHEN dayofweek(d) IN (1, 7) THEN true ELSE false END AS is_weekend FROM (SELECT explode(sequence(to_date('2020-01-01'), to_date('2028-12-31'), interval 1 day)) AS d) dates",
+   "description": "Calendar with Australian financial year",
+   "business_owner": "Data engineering",
+   "consumers": "Power BI / Direct Lake, data agent",
+   "active": true
+  },
+  {
+   "transform_id": "IT-G02",
+   "industry": "ites",
+   "gold_table": "dim_client_service",
+   "run_order": 110,
+   "sql_text": "SELECT service_id, contract_ref, service_name, service_line, delivery_centre, status, sla_tier, monthly_fee_aud, contract_start, CAST(floor(months_between(current_date(), contract_start) / 12) AS INT) AS age_years, _valid_from AS version_valid_from FROM silver.client_service WHERE _is_current = true",
+   "description": "Current view of the client service register (history stays in Silver SCD2)",
+   "business_owner": "Service Delivery",
+   "consumers": "Power BI / Direct Lake, data agent",
+   "active": true
+  },
+  {
+   "transform_id": "IT-G03",
+   "industry": "ites",
+   "gold_table": "fact_incident",
+   "run_order": 120,
+   "sql_text": "SELECT v.incident_id, v.service_id, v.category, v.priority, v.status, v.opened_ts, v.resolved_ts, to_date(v.opened_ts) AS opened_date, CAST(date_format(v.opened_ts, 'yyyyMMdd') AS INT) AS opened_date_key, ROUND((unix_timestamp(v.resolved_ts) - unix_timestamp(v.opened_ts)) / 3600.0, 2) AS hours_to_close, CASE WHEN v.status IN ('NEW', 'IN_PROGRESS') THEN 1 ELSE 0 END AS is_open, v.sla_penalty_aud, v.effort_hours, d.delivery_centre, d.service_line, d.sla_tier FROM silver.incident v LEFT JOIN silver.client_service d ON d.service_id = v.service_id AND d._is_current = true WHERE v._is_deleted = false",
+   "description": "Incidents with duration and client service attributes",
+   "business_owner": "Service Delivery",
+   "consumers": "Power BI / Direct Lake, data agent",
+   "active": true
+  },
+  {
+   "transform_id": "IT-G04",
+   "industry": "ites",
+   "gold_table": "fact_service_perf_hourly",
+   "run_order": 130,
+   "sql_text": "SELECT service_id, date_trunc('HOUR', reading_ts) AS reading_hour, to_date(reading_ts) AS reading_date, CAST(date_format(reading_ts, 'yyyyMMdd') AS INT) AS reading_date_key, COUNT(*) AS readings, ROUND(AVG(p95_response_ms), 2) AS avg_p95_response_ms, ROUND(MAX(p95_response_ms), 2) AS max_p95_response_ms, ROUND(AVG(availability_pct), 2) AS avg_availability_pct, ROUND(AVG(ticket_backlog), 2) AS avg_ticket_backlog, SUM(CASE WHEN p95_response_ms > 2500 THEN 1 ELSE 0 END) AS breach_readings FROM silver.service_metric GROUP BY service_id, date_trunc('HOUR', reading_ts), to_date(reading_ts), CAST(date_format(reading_ts, 'yyyyMMdd') AS INT)",
+   "description": "Hourly service performance (15-min) with threshold breaches",
+   "business_owner": "Service Assurance",
+   "consumers": "Power BI / Direct Lake, data agent",
+   "active": true
+  },
+  {
+   "transform_id": "IT-G05",
+   "industry": "ites",
+   "gold_table": "client_service_health_scorecard",
+   "run_order": 200,
+   "sql_text": "WITH asat AS (SELECT MAX(to_date(opened_ts)) AS as_at FROM silver.incident), ev AS (SELECT v.service_id, COUNT(*) AS incidents_12m, SUM(CASE WHEN v.status IN ('NEW', 'IN_PROGRESS') THEN 1 ELSE 0 END) AS open_incidents, SUM(CASE WHEN v.category = 'OUTAGE' THEN 1 ELSE 0 END) AS urgent_incidents_12m, ROUND(SUM(v.sla_penalty_aud), 2) AS sla_penalty_aud_12m FROM silver.incident v CROSS JOIN asat WHERE v._is_deleted = false AND to_date(v.opened_ts) > add_months(asat.as_at, -12) GROUP BY v.service_id), rd AS (SELECT service_id, MAX(p95_response_ms) AS max_p95_response_ms, SUM(CASE WHEN p95_response_ms > 2500 THEN 1 ELSE 0 END) AS breach_readings FROM silver.service_metric GROUP BY service_id), s AS (SELECT d.service_id, d.contract_ref, d.service_name, d.service_line, d.delivery_centre, d.status, d.sla_tier, COALESCE(ev.incidents_12m, 0) AS incidents_12m, COALESCE(ev.open_incidents, 0) AS open_incidents, COALESCE(ev.urgent_incidents_12m, 0) AS urgent_incidents_12m, COALESCE(ev.sla_penalty_aud_12m, 0) AS sla_penalty_aud_12m, rd.max_p95_response_ms, COALESCE(rd.breach_readings, 0) AS breach_readings, d.monthly_fee_aud FROM silver.client_service d LEFT JOIN ev ON ev.service_id = d.service_id LEFT JOIN rd ON rd.service_id = d.service_id WHERE d._is_current = true) SELECT s.*, ROUND(LEAST(100, COALESCE(s.sla_tier, 1) * 8 + s.open_incidents * 6 + s.urgent_incidents_12m * 4 + LEAST(s.breach_readings, 20) * 1.5), 1) AS risk_score, CASE WHEN LEAST(100, COALESCE(s.sla_tier, 1) * 8 + s.open_incidents * 6 + s.urgent_incidents_12m * 4 + LEAST(s.breach_readings, 20) * 1.5) >= 60 THEN 'High' WHEN LEAST(100, COALESCE(s.sla_tier, 1) * 8 + s.open_incidents * 6 + s.urgent_incidents_12m * 4 + LEAST(s.breach_readings, 20) * 1.5) >= 35 THEN 'Medium' ELSE 'Low' END AS risk_band, ROUND(s.open_incidents * 2000 + LEAST(s.breach_readings, 20) * 500 + COALESCE(s.monthly_fee_aud, 0) * COALESCE(s.sla_tier, 1) * 0.01, 0) AS revenue_at_risk_aud FROM s",
+   "description": "Client service risk score - incidents, urgent work and p95 response time breaches, plus contract revenue at risk in AUD (weights and dollar rates are illustrative: $2,000 SLA penalty exposure per open incident + $500 per slow 15-min window + monthly fee x SLA tier x 1%)",
+   "business_owner": "Service Delivery",
+   "consumers": "Power BI / Direct Lake, data agent",
+   "active": true
+  },
+  {
+   "transform_id": "IT-G06",
+   "industry": "ites",
+   "gold_table": "client_contact_summary",
+   "run_order": 210,
+   "sql_text": "SELECT delivery_centre, contact_role, COUNT(*) AS client_contacts, SUM(CASE WHEN status = 'Active' THEN 1 ELSE 0 END) AS active_client_contacts, ROUND(AVG(year(current_date()) - birth_year), 1) AS avg_age, COUNT(DISTINCT service_id) AS linked_client_services FROM silver.client_contact WHERE _is_deleted = false GROUP BY delivery_centre, contact_role",
+   "description": "Client contacts by delivery centre and contact_role",
+   "business_owner": "Client Services",
+   "consumers": "Power BI / Direct Lake, data agent",
+   "active": true
+  }
+ ],
+ "onboard": {
+  "object": {
+   "object_id": "IT_MON_CHANGE_CALENDAR",
+   "industry": "ites",
+   "source_system": "mon",
+   "source_object": "change_calendar",
+   "source_type": "file",
+   "ingest_method": "landed_file",
+   "landing_format": "txt",
+   "landing_path": "landing/mon/change_calendar",
+   "read_options": "{\"header\": true, \"delimiter\": \"|\"}",
+   "source_table": null,
+   "load_type": "incremental",
+   "watermark_column": null,
+   "primary_keys": "delivery_centre,obs_date",
+   "dedupe_order_by": "_ingested_at DESC",
+   "bronze_table": "mon_change_calendar",
+   "silver_table": "change_window",
+   "silver_write_mode": "merge_scd1",
+   "load_group": "reference",
+   "priority": 25,
+   "sla_hours": 26,
+   "data_owner": "Change Management",
+   "sensitivity": "Public",
+   "active": true,
+   "description": "Daily change calendar by delivery centre (pipe-delimited, dd/MM/yyyy) - onboarded live in the demo",
+   "fabric_alternative": "Public or partner feed - could be a REST copy, or a shortcut if the provider shares a folder"
+  },
+  "columns": [
+   [
+    "delivery_centre",
+    "delivery_centre",
+    "string",
+    null
+   ],
+   [
+    "obs_date",
+    "obs_date",
+    "date",
+    "to_date(obs_date, 'dd/MM/yyyy')"
+   ],
+   [
+    "changes_scheduled",
+    "changes_scheduled",
+    "double",
+    null
+   ],
+   [
+    "emergency_changes",
+    "emergency_changes",
+    "double",
+    null
+   ],
+   [
+    "patching_hours",
+    "patching_hours",
+    "double",
+    null
+   ],
+   [
+    "change_risk",
+    "change_risk",
+    "string",
+    null
+   ]
+  ],
+  "rules": [
+   [
+    "IT-EXT-01",
+    "changes_scheduled plausible",
+    "technical",
+    "range",
+    "changes_scheduled",
+    "{\"min\": 0, \"max\": 500}",
+    "warn"
+   ],
+   [
+    "IT-EXT-02",
+    "Known change_risk",
+    "business",
+    "allowed_values",
+    "change_risk",
+    "{\"values\": [\"Low\", \"Medium\", \"High\", \"Freeze\"]}",
+    "warn"
+   ]
+  ],
+  "gold": {
+   "transform_id": "IT-G07",
+   "industry": "ites",
+   "gold_table": "incident_vs_change_window",
+   "run_order": 220,
+   "sql_text": "WITH ev AS (SELECT d.delivery_centre, to_date(v.opened_ts) AS obs_date, COUNT(*) AS incidents, SUM(CASE WHEN v.category = 'OUTAGE' THEN 1 ELSE 0 END) AS urgent_incidents FROM silver.incident v JOIN silver.client_service d ON d.service_id = v.service_id AND d._is_current = true WHERE v._is_deleted = false GROUP BY d.delivery_centre, to_date(v.opened_ts)) SELECT x.delivery_centre, x.obs_date, x.changes_scheduled, x.emergency_changes, x.patching_hours, x.change_risk, COALESCE(ev.incidents, 0) AS incidents, COALESCE(ev.urgent_incidents, 0) AS urgent_incidents FROM silver.change_window x LEFT JOIN ev ON ev.delivery_centre = x.delivery_centre AND ev.obs_date = x.obs_date WHERE x._is_deleted = false",
+   "description": "Change volume against incidents by delivery centre",
+   "business_owner": "Change Management",
+   "consumers": "Power BI / Direct Lake",
+   "active": true
+  }
+ }
+}

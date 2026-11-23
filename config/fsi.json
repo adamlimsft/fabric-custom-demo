@@ -1,0 +1,1305 @@
+{
+ "pack": {
+  "id": "fsi",
+  "industry": "Financial services",
+  "org": "Harbour Mutual Bank",
+  "short": "HMB",
+  "prefix": "FS",
+  "tagline": "retail and business bank",
+  "email_domain": "hmb.example.com.au",
+  "region_col": "state",
+  "region_label": "state",
+  "regions": [
+   "NSW",
+   "VIC",
+   "QLD",
+   "WA",
+   "SA",
+   "TAS",
+   "ACT"
+  ],
+  "name_words": [
+   "Everyday",
+   "Bonus Saver",
+   "Offset",
+   "Business",
+   "Platinum",
+   "Kids",
+   "Term",
+   "Rewards",
+   "Farm",
+   "Smart"
+  ],
+  "sys": {
+   "ops": {
+    "code": "core",
+    "name": "Core banking platform (on-prem SQL Server)",
+    "type": "Database",
+    "owner": "Core Banking",
+    "fabric": "Mirroring for SQL Server vs Copy job incremental; keep PII handling in mind before mirroring"
+   },
+   "tel": {
+    "code": "pay",
+    "name": "Payments transaction-monitoring files (15-min windows) and Scamwatch feed",
+    "type": "File drop (SFTP)",
+    "owner": "Payments",
+    "fabric": "Eventstream for real-time payment events; files to OneLake for reconciliation"
+   },
+   "crm": {
+    "code": "sfdc",
+    "name": "Salesforce Financial Services Cloud",
+    "type": "SaaS CRM",
+    "owner": "Customer Experience",
+    "fabric": "Copy job with the Salesforce connector"
+   }
+  },
+  "entity": {
+   "table": "account",
+   "src": "accounts",
+   "label": "account",
+   "plural": "accounts",
+   "id": "account_id",
+   "code": "account_number",
+   "code_prefix": "ACC",
+   "name_col": "account_name",
+   "type_col": "product_type",
+   "types": [
+    "TRANSACTION",
+    "SAVINGS",
+    "PERSONAL_LOAN",
+    "HOME_LOAN",
+    "CREDIT_CARD"
+   ],
+   "status": [
+    "PERFORMING",
+    "DORMANT",
+    "ARREARS",
+    "CLOSED"
+   ],
+   "tier_col": "risk_grade",
+   "tier_label": "credit risk grade (1-5, 5 = highest risk)",
+   "cap_col": "balance_aud",
+   "cap_label": "balance or limit (AUD)",
+   "cap_range": [
+    1000,
+    900000
+   ],
+   "start_col": "open_date",
+   "start_years": [
+    1995,
+    2025
+   ],
+   "drift_col": "hardship_flag",
+   "drift_values": [
+    "Y",
+    "N"
+   ],
+   "owner": "Retail Credit Risk",
+   "count": 240
+  },
+  "event": {
+   "table": "risk_case",
+   "src": "risk_cases",
+   "label": "risk case",
+   "plural": "risk cases",
+   "id": "case_id",
+   "id_start": 900001,
+   "type_col": "case_type",
+   "types": [
+    "CARD_FRAUD",
+    "SCAM",
+    "ACCOUNT_TAKEOVER",
+    "HARDSHIP"
+   ],
+   "type_names": [
+    "Card fraud",
+    "Scam payment",
+    "Account takeover",
+    "Hardship / arrears"
+   ],
+   "urgent_type": "ACCOUNT_TAKEOVER",
+   "status": [
+    "OPEN",
+    "INVESTIGATING",
+    "CLOSED",
+    "WITHDRAWN"
+   ],
+   "open_ts": "raised_ts",
+   "close_ts": "closed_ts",
+   "open_verb": "raised",
+   "close_verb": "closed",
+   "amount_col": "case_amount_aud",
+   "amount_range": [
+    0,
+    60000
+   ],
+   "qty_col": "analyst_hours",
+   "qty_range": [
+    0.25,
+    40
+   ],
+   "descriptions": [
+    "Card testing pattern detected",
+    "Customer reported romance scam",
+    "New device and password reset",
+    "Missed two home loan repayments",
+    "Hardship request after job loss",
+    "Remote access scam call",
+    "Mule account behaviour",
+    "Credit card over limit for 60 days"
+   ],
+   "owner": "Fraud & Collections"
+  },
+  "reading": {
+   "table": "txn_monitor",
+   "src": "txn_monitoring",
+   "label": "account transaction monitoring (15-min windows)",
+   "fact": "txn_monitor",
+   "monitored": 24,
+   "monitored_types": [
+    "TRANSACTION",
+    "CREDIT_CARD"
+   ],
+   "metrics": [
+    {
+     "col": "decline_pct",
+     "label": "declined transaction rate",
+     "unit": "%",
+     "base": 4,
+     "sd": 2.5,
+     "min": 0,
+     "max": 100,
+     "threshold": 30
+    },
+    {
+     "col": "txn_value_aud",
+     "label": "transaction value",
+     "unit": "AUD",
+     "base": 380,
+     "sd": 220,
+     "min": 0,
+     "max": 200000
+    },
+    {
+     "col": "txn_count",
+     "label": "transactions",
+     "unit": "count",
+     "base": 6,
+     "sd": 3,
+     "min": 0,
+     "max": 10000
+    }
+   ],
+   "sentinel": 999.9,
+   "owner": "Payments"
+  },
+  "party": {
+   "table": "customer",
+   "src": "customers",
+   "label": "customer",
+   "plural": "customers",
+   "id": "customer_id",
+   "id_prefix": "C",
+   "sf_type": "Account",
+   "segment_col": "segment",
+   "segments": [
+    "Retail",
+    "Premium",
+    "Business",
+    "Agribusiness"
+   ],
+   "status": [
+    "Active",
+    "Exited"
+   ],
+   "sensitive_col": "tfn",
+   "sensitive_label": "tax file number",
+   "sensitive_treatment": "drop",
+   "owner": "Customer Experience",
+   "count": 300
+  },
+  "extra": {
+   "table": "scam_report",
+   "src": "scam_reports",
+   "label": "Scamwatch reports",
+   "sys": "tel",
+   "cols": [
+    {
+     "col": "reports",
+     "base": 40,
+     "sd": 15,
+     "min": 0,
+     "max": 5000
+    },
+    {
+     "col": "reported_loss_aud",
+     "base": 90000,
+     "sd": 40000,
+     "min": 0,
+     "max": 10000000
+    },
+    {
+     "col": "phishing_share_pct",
+     "base": 35,
+     "sd": 10,
+     "min": 0,
+     "max": 100
+    }
+   ],
+   "cat_col": "top_scam_type",
+   "cat_values": [
+    "Phishing",
+    "Investment",
+    "Romance",
+    "Remote access"
+   ],
+   "owner": "Financial Crime",
+   "story": "public scam reports against risk cases by state"
+  },
+  "alert": {
+   "stream": "fraud_signal",
+   "label": "fraud signal",
+   "codes": [
+    "CARD_TESTING",
+    "IMPOSSIBLE_TRAVEL",
+    "HIGH_RISK_MCC"
+   ],
+   "storm": "card testing burst"
+  },
+  "ref": {
+   "title": "Risk case handling targets",
+   "owner": "Fraud & Collections",
+   "rows": [
+    [
+     "CARD_FRAUD",
+     "Fraud",
+     48,
+     "Card Fraud Ops"
+    ],
+    [
+     "SCAM",
+     "Fraud",
+     24,
+     "Scam Response"
+    ],
+    [
+     "ACCOUNT_TAKEOVER",
+     "Critical",
+     4,
+     "Fraud Rapid Response"
+    ],
+    [
+     "HARDSHIP",
+     "Credit",
+     504,
+     "Collections & Hardship"
+    ]
+   ]
+  },
+  "impact": {
+   "col": "expected_loss_aud",
+   "label": "expected loss",
+   "open_cost": 3500,
+   "breach_cost": 250,
+   "cap_rate": 0.002,
+   "rule": "$3,500 per open case + $250 per suspicious 15-min window + balance x risk grade x 0.2%"
+  },
+  "ai": {
+   "persona": "fraud, credit risk and collections",
+   "cust": "retail and business banks, mutuals and credit unions",
+   "q_model": [
+    "What was the total case amount by case type this financial year?",
+    "Which state has the most accounts in arrears?",
+    "Show total expected loss by product type."
+   ],
+   "q_agent": [
+    "Which 10 accounts have the highest expected loss, and what is their risk band and number of open cases?",
+    "Compare average hours to close account takeover cases by state.",
+    "Which accounts had a declined transaction rate above 30% in the last 3 days?",
+    "How many home loan accounts are in arrears with an open hardship case, and what is their total balance?",
+    "How much have we lost to scams in NSW compared with VIC?"
+   ],
+   "q_onto": [
+    "Show credit card accounts in NSW with an open account takeover case and a high risk band.",
+    "For the account with the highest expected loss, list its risk cases and the customer segment behind it.",
+    "Which customers own accounts that are in arrears and have an open fraud or hardship case?"
+   ]
+  }
+ },
+ "source_system": [
+  {
+   "source_system": "core",
+   "industry": "fsi",
+   "display_name": "Core banking platform (on-prem SQL Server)",
+   "system_type": "Database",
+   "connection_pattern": "On-premises data gateway -> pipeline Copy with watermark query",
+   "technical_owner": "Core Banking",
+   "fabric_options": "Mirroring for SQL Server vs Copy job incremental; keep PII handling in mind before mirroring"
+  },
+  {
+   "source_system": "pay",
+   "industry": "fsi",
+   "display_name": "Payments transaction-monitoring files (15-min windows) and Scamwatch feed",
+   "system_type": "File drop (SFTP)",
+   "connection_pattern": "Files dropped to OneLake (Files/landing) every 15 minutes",
+   "technical_owner": "Payments",
+   "fabric_options": "Eventstream for real-time payment events; files to OneLake for reconciliation"
+  },
+  {
+   "source_system": "sfdc",
+   "industry": "fsi",
+   "display_name": "Salesforce Financial Services Cloud",
+   "system_type": "SaaS CRM",
+   "connection_pattern": "REST/OData API -> JSON landed per day",
+   "technical_owner": "Customer Experience",
+   "fabric_options": "Copy job with the Salesforce connector"
+  }
+ ],
+ "ingestion_object": [
+  {
+   "object_id": "FS_CORE_ACCOUNTS",
+   "industry": "fsi",
+   "source_system": "core",
+   "source_object": "accounts",
+   "source_type": "database",
+   "ingest_method": "copy_db",
+   "landing_format": "csv",
+   "landing_path": "landing/core/accounts",
+   "read_options": "{\"header\": true, \"delimiter\": \",\"}",
+   "source_table": "src.accounts",
+   "load_type": "incremental",
+   "watermark_column": "last_modified",
+   "primary_keys": "account_id",
+   "dedupe_order_by": "last_modified DESC, _ingested_at DESC",
+   "bronze_table": "core_accounts",
+   "silver_table": "account",
+   "silver_write_mode": "merge_scd2",
+   "load_group": "reference",
+   "priority": 10,
+   "sla_hours": 26,
+   "data_owner": "Retail Credit Risk",
+   "sensitivity": "Internal",
+   "active": true,
+   "description": "Account register. SCD2 keeps status, risk_grade and balance_aud history.",
+   "fabric_alternative": "Strong mirroring candidate - small, slowly changing, needed in near real time by operations"
+  },
+  {
+   "object_id": "FS_CORE_RISK_CASES",
+   "industry": "fsi",
+   "source_system": "core",
+   "source_object": "risk_cases",
+   "source_type": "database",
+   "ingest_method": "copy_db",
+   "landing_format": "csv",
+   "landing_path": "landing/core/risk_cases",
+   "read_options": "{\"header\": true, \"delimiter\": \",\"}",
+   "source_table": "src.risk_cases",
+   "load_type": "incremental",
+   "watermark_column": "last_modified",
+   "primary_keys": "case_id",
+   "dedupe_order_by": "last_modified DESC, _ingested_at DESC",
+   "bronze_table": "core_risk_cases",
+   "silver_table": "risk_case",
+   "silver_write_mode": "merge_scd1",
+   "load_group": "transactional",
+   "priority": 20,
+   "sla_hours": 26,
+   "data_owner": "Fraud & Collections",
+   "sensitivity": "Internal",
+   "active": true,
+   "description": "Risk cases - incremental by last_modified; can arrive before their account (late-arriving).",
+   "fabric_alternative": "Copy job incremental or mirroring; keep the watermark query if the source is on-prem"
+  },
+  {
+   "object_id": "FS_PAY_TXN_MONITORING",
+   "industry": "fsi",
+   "source_system": "pay",
+   "source_object": "txn_monitoring",
+   "source_type": "file",
+   "ingest_method": "landed_file",
+   "landing_format": "csv",
+   "landing_path": "landing/pay/txn_monitoring",
+   "read_options": "{\"header\": true, \"delimiter\": \",\"}",
+   "source_table": null,
+   "load_type": "incremental",
+   "watermark_column": null,
+   "primary_keys": "account_id,reading_ts",
+   "dedupe_order_by": "_ingested_at DESC",
+   "bronze_table": "pay_txn_monitoring",
+   "silver_table": "txn_monitor",
+   "silver_write_mode": "insert_only",
+   "load_group": "telemetry",
+   "priority": 30,
+   "sla_hours": 2,
+   "data_owner": "Payments",
+   "sensitivity": "Internal",
+   "active": true,
+   "description": "Account transaction monitoring (15-min windows) every 15 minutes, four micro-batch files a day. Insert-only and idempotent.",
+   "fabric_alternative": "Eventstream into Eventhouse for real time; keep this batch path for history and reconciliation"
+  },
+  {
+   "object_id": "FS_SFDC_CUSTOMERS",
+   "industry": "fsi",
+   "source_system": "sfdc",
+   "source_object": "customers",
+   "source_type": "api",
+   "ingest_method": "landed_file",
+   "landing_format": "json",
+   "landing_path": "landing/sfdc/customers",
+   "read_options": "{\"multiline\": true, \"json_root\": \"records\"}",
+   "source_table": null,
+   "load_type": "full",
+   "watermark_column": null,
+   "primary_keys": "customer_id",
+   "dedupe_order_by": "last_modified_ts DESC, _ingested_at DESC",
+   "bronze_table": "sfdc_customers",
+   "silver_table": "customer",
+   "silver_write_mode": "merge_scd1",
+   "load_group": "reference",
+   "priority": 15,
+   "sla_hours": 26,
+   "data_owner": "Customer Experience",
+   "sensitivity": "Confidential",
+   "active": true,
+   "description": "Customers - full daily snapshot from the CRM API (contains PII). Missing rows are soft-deleted.",
+   "fabric_alternative": "Copy job with the CRM connector; Dataverse-based CRMs can use Link to Fabric instead of copying"
+  }
+ ],
+ "column_map": [
+  {
+   "object_id": "FS_CORE_ACCOUNTS",
+   "column_order": 0,
+   "source_column": "account_id",
+   "target_column": "account_id",
+   "data_type": "int",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "FS_CORE_ACCOUNTS",
+   "column_order": 1,
+   "source_column": "account_number",
+   "target_column": "account_number",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "FS_CORE_ACCOUNTS",
+   "column_order": 2,
+   "source_column": "account_name",
+   "target_column": "account_name",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "FS_CORE_ACCOUNTS",
+   "column_order": 3,
+   "source_column": "product_type",
+   "target_column": "product_type",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "FS_CORE_ACCOUNTS",
+   "column_order": 4,
+   "source_column": "state",
+   "target_column": "state",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "FS_CORE_ACCOUNTS",
+   "column_order": 5,
+   "source_column": "status",
+   "target_column": "status",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "FS_CORE_ACCOUNTS",
+   "column_order": 6,
+   "source_column": "risk_grade",
+   "target_column": "risk_grade",
+   "data_type": "int",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "FS_CORE_ACCOUNTS",
+   "column_order": 7,
+   "source_column": "balance_aud",
+   "target_column": "balance_aud",
+   "data_type": "double",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "FS_CORE_ACCOUNTS",
+   "column_order": 8,
+   "source_column": "open_date",
+   "target_column": "open_date",
+   "data_type": "date",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "FS_CORE_ACCOUNTS",
+   "column_order": 9,
+   "source_column": "last_modified",
+   "target_column": "last_modified",
+   "data_type": "timestamp",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "FS_CORE_RISK_CASES",
+   "column_order": 0,
+   "source_column": "case_id",
+   "target_column": "case_id",
+   "data_type": "int",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "FS_CORE_RISK_CASES",
+   "column_order": 1,
+   "source_column": "account_id",
+   "target_column": "account_id",
+   "data_type": "int",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "FS_CORE_RISK_CASES",
+   "column_order": 2,
+   "source_column": "case_type",
+   "target_column": "case_type",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "FS_CORE_RISK_CASES",
+   "column_order": 3,
+   "source_column": "priority",
+   "target_column": "priority",
+   "data_type": "int",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "FS_CORE_RISK_CASES",
+   "column_order": 4,
+   "source_column": "status",
+   "target_column": "status",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "FS_CORE_RISK_CASES",
+   "column_order": 5,
+   "source_column": "raised_ts",
+   "target_column": "raised_ts",
+   "data_type": "timestamp",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "FS_CORE_RISK_CASES",
+   "column_order": 6,
+   "source_column": "closed_ts",
+   "target_column": "closed_ts",
+   "data_type": "timestamp",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "FS_CORE_RISK_CASES",
+   "column_order": 7,
+   "source_column": "case_amount_aud",
+   "target_column": "case_amount_aud",
+   "data_type": "decimal(12,2)",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "FS_CORE_RISK_CASES",
+   "column_order": 8,
+   "source_column": "analyst_hours",
+   "target_column": "analyst_hours",
+   "data_type": "double",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "FS_CORE_RISK_CASES",
+   "column_order": 9,
+   "source_column": "description",
+   "target_column": "description",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "FS_CORE_RISK_CASES",
+   "column_order": 10,
+   "source_column": "last_modified",
+   "target_column": "last_modified",
+   "data_type": "timestamp",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "FS_PAY_TXN_MONITORING",
+   "column_order": 0,
+   "source_column": "account_id",
+   "target_column": "account_id",
+   "data_type": "int",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "FS_PAY_TXN_MONITORING",
+   "column_order": 1,
+   "source_column": "reading_time",
+   "target_column": "reading_ts",
+   "data_type": "timestamp",
+   "transform_expr": "to_timestamp(reading_time, 'dd/MM/yyyy HH:mm')",
+   "pii_treatment": "none",
+   "sensitivity": "none",
+   "description": ""
+  },
+  {
+   "object_id": "FS_PAY_TXN_MONITORING",
+   "column_order": 2,
+   "source_column": "decline_pct",
+   "target_column": "decline_pct",
+   "data_type": "double",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "FS_PAY_TXN_MONITORING",
+   "column_order": 3,
+   "source_column": "txn_value_aud",
+   "target_column": "txn_value_aud",
+   "data_type": "double",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "FS_PAY_TXN_MONITORING",
+   "column_order": 4,
+   "source_column": "txn_count",
+   "target_column": "txn_count",
+   "data_type": "double",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "FS_SFDC_CUSTOMERS",
+   "column_order": 0,
+   "source_column": "Id",
+   "target_column": "customer_id",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "FS_SFDC_CUSTOMERS",
+   "column_order": 1,
+   "source_column": "FirstName",
+   "target_column": "first_name",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "drop",
+   "sensitivity": "Confidential",
+   "description": ""
+  },
+  {
+   "object_id": "FS_SFDC_CUSTOMERS",
+   "column_order": 2,
+   "source_column": "LastName",
+   "target_column": "last_name",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "drop",
+   "sensitivity": "Confidential",
+   "description": ""
+  },
+  {
+   "object_id": "FS_SFDC_CUSTOMERS",
+   "column_order": 3,
+   "source_column": "Email",
+   "target_column": "email_masked",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "mask_email",
+   "sensitivity": "Confidential",
+   "description": ""
+  },
+  {
+   "object_id": "FS_SFDC_CUSTOMERS",
+   "column_order": 4,
+   "source_column": "MobilePhone",
+   "target_column": "mobile_masked",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "mask_phone",
+   "sensitivity": "Confidential",
+   "description": ""
+  },
+  {
+   "object_id": "FS_SFDC_CUSTOMERS",
+   "column_order": 5,
+   "source_column": "Birthdate",
+   "target_column": "birth_year",
+   "data_type": "int",
+   "transform_expr": null,
+   "pii_treatment": "year_only",
+   "sensitivity": "Confidential",
+   "description": ""
+  },
+  {
+   "object_id": "FS_SFDC_CUSTOMERS",
+   "column_order": 6,
+   "source_column": "MailingPostalCode",
+   "target_column": "postcode",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "FS_SFDC_CUSTOMERS",
+   "column_order": 7,
+   "source_column": "State__c",
+   "target_column": "state",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "FS_SFDC_CUSTOMERS",
+   "column_order": 8,
+   "source_column": "Segment__c",
+   "target_column": "segment",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "FS_SFDC_CUSTOMERS",
+   "column_order": 9,
+   "source_column": "AccountId__c",
+   "target_column": "account_id",
+   "data_type": "int",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "FS_SFDC_CUSTOMERS",
+   "column_order": 10,
+   "source_column": "Status__c",
+   "target_column": "status",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "FS_SFDC_CUSTOMERS",
+   "column_order": 11,
+   "source_column": "Tfn__c",
+   "target_column": "tfn",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "drop",
+   "sensitivity": "Restricted",
+   "description": ""
+  },
+  {
+   "object_id": "FS_SFDC_CUSTOMERS",
+   "column_order": 12,
+   "source_column": "LastModifiedDate",
+   "target_column": "last_modified_ts",
+   "data_type": "timestamp",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  }
+ ],
+ "dq_rule": [
+  {
+   "rule_id": "FS-ENT-01",
+   "object_id": "FS_CORE_ACCOUNTS",
+   "rule_name": "Account id present",
+   "rule_category": "technical",
+   "check_type": "not_null",
+   "column_name": "account_id",
+   "params": "{}",
+   "severity": "fail",
+   "fail_threshold_pct": 0,
+   "rule_owner": "Data engineering",
+   "description": "Primary key must never be null",
+   "active": true
+  },
+  {
+   "rule_id": "FS-ENT-02",
+   "object_id": "FS_CORE_ACCOUNTS",
+   "rule_name": "Known product_type",
+   "rule_category": "technical",
+   "check_type": "allowed_values",
+   "column_name": "product_type",
+   "params": "{\"values\": [\"TRANSACTION\", \"SAVINGS\", \"PERSONAL_LOAN\", \"HOME_LOAN\", \"CREDIT_CARD\"]}",
+   "severity": "warn",
+   "fail_threshold_pct": null,
+   "rule_owner": "Data engineering",
+   "description": "Unknown classes are kept but flagged for the data owner",
+   "active": true
+  },
+  {
+   "rule_id": "FS-ENT-03",
+   "object_id": "FS_CORE_ACCOUNTS",
+   "rule_name": "risk_grade between 1 and 5",
+   "rule_category": "technical",
+   "check_type": "range",
+   "column_name": "risk_grade",
+   "params": "{\"min\": 1, \"max\": 5}",
+   "severity": "warn",
+   "fail_threshold_pct": null,
+   "rule_owner": "Data engineering",
+   "description": "Out-of-range ratings usually mean a keying error in the source",
+   "active": true
+  },
+  {
+   "rule_id": "FS-ENT-04",
+   "object_id": "FS_CORE_ACCOUNTS",
+   "rule_name": "Known status",
+   "rule_category": "business",
+   "check_type": "allowed_values",
+   "column_name": "status",
+   "params": "{\"values\": [\"PERFORMING\", \"DORMANT\", \"ARREARS\", \"CLOSED\"]}",
+   "severity": "warn",
+   "fail_threshold_pct": null,
+   "rule_owner": "Retail Credit Risk",
+   "description": "Status list agreed with Retail Credit Risk",
+   "active": true
+  },
+  {
+   "rule_id": "FS-EVT-01",
+   "object_id": "FS_CORE_RISK_CASES",
+   "rule_name": "Risk case id present",
+   "rule_category": "technical",
+   "check_type": "not_null",
+   "column_name": "case_id",
+   "params": "{}",
+   "severity": "fail",
+   "fail_threshold_pct": 0,
+   "rule_owner": "Data engineering",
+   "description": "Primary key must never be null",
+   "active": true
+  },
+  {
+   "rule_id": "FS-EVT-02",
+   "object_id": "FS_CORE_RISK_CASES",
+   "rule_name": "Account exists",
+   "rule_category": "technical",
+   "check_type": "referential",
+   "column_name": "account_id",
+   "params": "{\"ref_table\": \"silver.account\", \"ref_column\": \"account_id\"}",
+   "severity": "quarantine",
+   "fail_threshold_pct": null,
+   "rule_owner": "Data engineering",
+   "description": "Held until the account arrives (late-arriving reference data), then merged automatically",
+   "active": true
+  },
+  {
+   "rule_id": "FS-EVT-03",
+   "object_id": "FS_CORE_RISK_CASES",
+   "rule_name": "Closed after raised",
+   "rule_category": "business",
+   "check_type": "expression",
+   "column_name": null,
+   "params": "{\"expr\": \"closed_ts IS NULL OR closed_ts >= raised_ts\"}",
+   "severity": "quarantine",
+   "fail_threshold_pct": null,
+   "rule_owner": "Fraud & Collections",
+   "description": "A risk case can't be closed before it was raised",
+   "active": true
+  },
+  {
+   "rule_id": "FS-EVT-04",
+   "object_id": "FS_CORE_RISK_CASES",
+   "rule_name": "case_amount_aud not negative",
+   "rule_category": "technical",
+   "check_type": "range",
+   "column_name": "case_amount_aud",
+   "params": "{\"min\": 0}",
+   "severity": "warn",
+   "fail_threshold_pct": null,
+   "rule_owner": "Data engineering",
+   "description": "Negative values are sign errors in the source extract",
+   "active": true
+  },
+  {
+   "rule_id": "FS-EVT-05",
+   "object_id": "FS_CORE_RISK_CASES",
+   "rule_name": "ACCOUNT_TAKEOVER is priority 1",
+   "rule_category": "business",
+   "check_type": "expression",
+   "column_name": null,
+   "params": "{\"expr\": \"case_type <> 'ACCOUNT_TAKEOVER' OR priority = 1\"}",
+   "severity": "warn",
+   "fail_threshold_pct": null,
+   "rule_owner": "Fraud & Collections",
+   "description": "Account takeover risk cases must be raised as priority 1",
+   "active": true
+  },
+  {
+   "rule_id": "FS-EVT-06",
+   "object_id": "FS_CORE_RISK_CASES",
+   "rule_name": "raised_ts parses",
+   "rule_category": "technical",
+   "check_type": "not_null",
+   "column_name": "raised_ts",
+   "params": "{}",
+   "severity": "fail",
+   "fail_threshold_pct": 5,
+   "rule_owner": "Data engineering",
+   "description": "If more than 5% of timestamps fail to parse, the extract format has changed - stop the load",
+   "active": true
+  },
+  {
+   "rule_id": "FS-RDG-01",
+   "object_id": "FS_PAY_TXN_MONITORING",
+   "rule_name": "Declined transaction rate plausible",
+   "rule_category": "technical",
+   "check_type": "range",
+   "column_name": "decline_pct",
+   "params": "{\"min\": 0, \"max\": 100}",
+   "severity": "quarantine",
+   "fail_threshold_pct": null,
+   "rule_owner": "Data engineering",
+   "description": "Sensor fault values (e.g. 999.9) are quarantined, never averaged into Gold",
+   "active": true
+  },
+  {
+   "rule_id": "FS-RDG-02",
+   "object_id": "FS_PAY_TXN_MONITORING",
+   "rule_name": "Account known",
+   "rule_category": "technical",
+   "check_type": "referential",
+   "column_name": "account_id",
+   "params": "{\"ref_table\": \"silver.account\", \"ref_column\": \"account_id\"}",
+   "severity": "warn",
+   "fail_threshold_pct": null,
+   "rule_owner": "Data engineering",
+   "description": "Readings for unknown tags are flagged",
+   "active": true
+  },
+  {
+   "rule_id": "FS-RDG-03",
+   "object_id": "FS_PAY_TXN_MONITORING",
+   "rule_name": "Reading time parses",
+   "rule_category": "technical",
+   "check_type": "not_null",
+   "column_name": "reading_ts",
+   "params": "{}",
+   "severity": "fail",
+   "fail_threshold_pct": 5,
+   "rule_owner": "Data engineering",
+   "description": "Timestamp format change stops the load",
+   "active": true
+  },
+  {
+   "rule_id": "FS-PTY-01",
+   "object_id": "FS_SFDC_CUSTOMERS",
+   "rule_name": "Customer id present",
+   "rule_category": "technical",
+   "check_type": "not_null",
+   "column_name": "customer_id",
+   "params": "{}",
+   "severity": "fail",
+   "fail_threshold_pct": 0,
+   "rule_owner": "Data engineering",
+   "description": "Primary key must never be null",
+   "active": true
+  },
+  {
+   "rule_id": "FS-PTY-02",
+   "object_id": "FS_SFDC_CUSTOMERS",
+   "rule_name": "Email looks valid",
+   "rule_category": "technical",
+   "check_type": "regex",
+   "column_name": "email_masked",
+   "params": "{\"pattern\": \"^[^@\\\\s]+@[^@\\\\s]+\\\\.[^@\\\\s]+$\"}",
+   "severity": "warn",
+   "fail_threshold_pct": null,
+   "rule_owner": "Data engineering",
+   "description": "Checked on the raw value before masking",
+   "active": true
+  },
+  {
+   "rule_id": "FS-PTY-03",
+   "object_id": "FS_SFDC_CUSTOMERS",
+   "rule_name": "Australian postcode",
+   "rule_category": "technical",
+   "check_type": "regex",
+   "column_name": "postcode",
+   "params": "{\"pattern\": \"^\\\\d{4}$\"}",
+   "severity": "warn",
+   "fail_threshold_pct": null,
+   "rule_owner": "Data engineering",
+   "description": "Four digits",
+   "active": true
+  },
+  {
+   "rule_id": "FS-PTY-04",
+   "object_id": "FS_SFDC_CUSTOMERS",
+   "rule_name": "Known segment",
+   "rule_category": "business",
+   "check_type": "allowed_values",
+   "column_name": "segment",
+   "params": "{\"values\": [\"Retail\", \"Premium\", \"Business\", \"Agribusiness\"]}",
+   "severity": "warn",
+   "fail_threshold_pct": null,
+   "rule_owner": "Customer Experience",
+   "description": "Segments agreed with Customer Experience",
+   "active": true
+  }
+ ],
+ "gold_transform": [
+  {
+   "transform_id": "FS-G01",
+   "industry": "fsi",
+   "gold_table": "dim_date",
+   "run_order": 100,
+   "sql_text": "SELECT CAST(date_format(d, 'yyyyMMdd') AS INT) AS date_key, d AS calendar_date, year(d) AS calendar_year, quarter(d) AS calendar_quarter, month(d) AS month_number, date_format(d, 'MMM') AS month_name, date_format(d, 'yyyy-MM') AS year_month, dayofmonth(d) AS day_of_month, date_format(d, 'EEE') AS day_name, CASE WHEN month(d) >= 7 THEN year(d) + 1 ELSE year(d) END AS fy_year, concat('FY', substring(CAST(CASE WHEN month(d) >= 7 THEN year(d) + 1 ELSE year(d) END AS STRING), 3, 2)) AS fy_label, CASE WHEN dayofweek(d) IN (1, 7) THEN true ELSE false END AS is_weekend FROM (SELECT explode(sequence(to_date('2020-01-01'), to_date('2028-12-31'), interval 1 day)) AS d) dates",
+   "description": "Calendar with Australian financial year",
+   "business_owner": "Data engineering",
+   "consumers": "Power BI / Direct Lake, data agent",
+   "active": true
+  },
+  {
+   "transform_id": "FS-G02",
+   "industry": "fsi",
+   "gold_table": "dim_account",
+   "run_order": 110,
+   "sql_text": "SELECT account_id, account_number, account_name, product_type, state, status, risk_grade, balance_aud, open_date, CAST(floor(months_between(current_date(), open_date) / 12) AS INT) AS age_years, _valid_from AS version_valid_from FROM silver.account WHERE _is_current = true",
+   "description": "Current view of the account register (history stays in Silver SCD2)",
+   "business_owner": "Retail Credit Risk",
+   "consumers": "Power BI / Direct Lake, data agent",
+   "active": true
+  },
+  {
+   "transform_id": "FS-G03",
+   "industry": "fsi",
+   "gold_table": "fact_risk_case",
+   "run_order": 120,
+   "sql_text": "SELECT v.case_id, v.account_id, v.case_type, v.priority, v.status, v.raised_ts, v.closed_ts, to_date(v.raised_ts) AS opened_date, CAST(date_format(v.raised_ts, 'yyyyMMdd') AS INT) AS opened_date_key, ROUND((unix_timestamp(v.closed_ts) - unix_timestamp(v.raised_ts)) / 3600.0, 2) AS hours_to_close, CASE WHEN v.status IN ('OPEN', 'INVESTIGATING') THEN 1 ELSE 0 END AS is_open, v.case_amount_aud, v.analyst_hours, d.state, d.product_type, d.risk_grade FROM silver.risk_case v LEFT JOIN silver.account d ON d.account_id = v.account_id AND d._is_current = true WHERE v._is_deleted = false",
+   "description": "Risk cases with duration and account attributes",
+   "business_owner": "Fraud & Collections",
+   "consumers": "Power BI / Direct Lake, data agent",
+   "active": true
+  },
+  {
+   "transform_id": "FS-G04",
+   "industry": "fsi",
+   "gold_table": "fact_txn_monitor_hourly",
+   "run_order": 130,
+   "sql_text": "SELECT account_id, date_trunc('HOUR', reading_ts) AS reading_hour, to_date(reading_ts) AS reading_date, CAST(date_format(reading_ts, 'yyyyMMdd') AS INT) AS reading_date_key, COUNT(*) AS readings, ROUND(AVG(decline_pct), 2) AS avg_decline_pct, ROUND(MAX(decline_pct), 2) AS max_decline_pct, ROUND(AVG(txn_value_aud), 2) AS avg_txn_value_aud, ROUND(AVG(txn_count), 2) AS avg_txn_count, SUM(CASE WHEN decline_pct > 30 THEN 1 ELSE 0 END) AS breach_readings FROM silver.txn_monitor GROUP BY account_id, date_trunc('HOUR', reading_ts), to_date(reading_ts), CAST(date_format(reading_ts, 'yyyyMMdd') AS INT)",
+   "description": "Hourly account transaction monitoring (15-min windows) with threshold breaches",
+   "business_owner": "Payments",
+   "consumers": "Power BI / Direct Lake, data agent",
+   "active": true
+  },
+  {
+   "transform_id": "FS-G05",
+   "industry": "fsi",
+   "gold_table": "account_health_scorecard",
+   "run_order": 200,
+   "sql_text": "WITH asat AS (SELECT MAX(to_date(raised_ts)) AS as_at FROM silver.risk_case), ev AS (SELECT v.account_id, COUNT(*) AS risk_cases_12m, SUM(CASE WHEN v.status IN ('OPEN', 'INVESTIGATING') THEN 1 ELSE 0 END) AS open_risk_cases, SUM(CASE WHEN v.case_type = 'ACCOUNT_TAKEOVER' THEN 1 ELSE 0 END) AS urgent_risk_cases_12m, ROUND(SUM(v.case_amount_aud), 2) AS case_amount_aud_12m FROM silver.risk_case v CROSS JOIN asat WHERE v._is_deleted = false AND to_date(v.raised_ts) > add_months(asat.as_at, -12) GROUP BY v.account_id), rd AS (SELECT account_id, MAX(decline_pct) AS max_decline_pct, SUM(CASE WHEN decline_pct > 30 THEN 1 ELSE 0 END) AS breach_readings FROM silver.txn_monitor GROUP BY account_id), s AS (SELECT d.account_id, d.account_number, d.account_name, d.product_type, d.state, d.status, d.risk_grade, COALESCE(ev.risk_cases_12m, 0) AS risk_cases_12m, COALESCE(ev.open_risk_cases, 0) AS open_risk_cases, COALESCE(ev.urgent_risk_cases_12m, 0) AS urgent_risk_cases_12m, COALESCE(ev.case_amount_aud_12m, 0) AS case_amount_aud_12m, rd.max_decline_pct, COALESCE(rd.breach_readings, 0) AS breach_readings, d.balance_aud FROM silver.account d LEFT JOIN ev ON ev.account_id = d.account_id LEFT JOIN rd ON rd.account_id = d.account_id WHERE d._is_current = true) SELECT s.*, ROUND(LEAST(100, COALESCE(s.risk_grade, 1) * 8 + s.open_risk_cases * 6 + s.urgent_risk_cases_12m * 4 + LEAST(s.breach_readings, 20) * 1.5), 1) AS risk_score, CASE WHEN LEAST(100, COALESCE(s.risk_grade, 1) * 8 + s.open_risk_cases * 6 + s.urgent_risk_cases_12m * 4 + LEAST(s.breach_readings, 20) * 1.5) >= 60 THEN 'High' WHEN LEAST(100, COALESCE(s.risk_grade, 1) * 8 + s.open_risk_cases * 6 + s.urgent_risk_cases_12m * 4 + LEAST(s.breach_readings, 20) * 1.5) >= 35 THEN 'Medium' ELSE 'Low' END AS risk_band, ROUND(s.open_risk_cases * 3500 + LEAST(s.breach_readings, 20) * 250 + COALESCE(s.balance_aud, 0) * COALESCE(s.risk_grade, 1) * 0.002, 0) AS expected_loss_aud FROM s",
+   "description": "Account risk score - risk cases, urgent work and declined transaction rate breaches, plus expected loss in AUD (weights and dollar rates are illustrative: $3,500 per open case + $250 per suspicious 15-min window + balance x risk grade x 0.2%)",
+   "business_owner": "Retail Credit Risk",
+   "consumers": "Power BI / Direct Lake, data agent",
+   "active": true
+  },
+  {
+   "transform_id": "FS-G06",
+   "industry": "fsi",
+   "gold_table": "customer_summary",
+   "run_order": 210,
+   "sql_text": "SELECT state, segment, COUNT(*) AS customers, SUM(CASE WHEN status = 'Active' THEN 1 ELSE 0 END) AS active_customers, ROUND(AVG(year(current_date()) - birth_year), 1) AS avg_age, COUNT(DISTINCT account_id) AS linked_accounts FROM silver.customer WHERE _is_deleted = false GROUP BY state, segment",
+   "description": "Customers by state and segment",
+   "business_owner": "Customer Experience",
+   "consumers": "Power BI / Direct Lake, data agent",
+   "active": true
+  }
+ ],
+ "onboard": {
+  "object": {
+   "object_id": "FS_PAY_SCAM_REPORTS",
+   "industry": "fsi",
+   "source_system": "pay",
+   "source_object": "scam_reports",
+   "source_type": "file",
+   "ingest_method": "landed_file",
+   "landing_format": "txt",
+   "landing_path": "landing/pay/scam_reports",
+   "read_options": "{\"header\": true, \"delimiter\": \"|\"}",
+   "source_table": null,
+   "load_type": "incremental",
+   "watermark_column": null,
+   "primary_keys": "state,obs_date",
+   "dedupe_order_by": "_ingested_at DESC",
+   "bronze_table": "pay_scam_reports",
+   "silver_table": "scam_report",
+   "silver_write_mode": "merge_scd1",
+   "load_group": "reference",
+   "priority": 25,
+   "sla_hours": 26,
+   "data_owner": "Financial Crime",
+   "sensitivity": "Public",
+   "active": true,
+   "description": "Daily Scamwatch reports by state (pipe-delimited, dd/MM/yyyy) - onboarded live in the demo",
+   "fabric_alternative": "Public or partner feed - could be a REST copy, or a shortcut if the provider shares a folder"
+  },
+  "columns": [
+   [
+    "state",
+    "state",
+    "string",
+    null
+   ],
+   [
+    "obs_date",
+    "obs_date",
+    "date",
+    "to_date(obs_date, 'dd/MM/yyyy')"
+   ],
+   [
+    "reports",
+    "reports",
+    "double",
+    null
+   ],
+   [
+    "reported_loss_aud",
+    "reported_loss_aud",
+    "double",
+    null
+   ],
+   [
+    "phishing_share_pct",
+    "phishing_share_pct",
+    "double",
+    null
+   ],
+   [
+    "top_scam_type",
+    "top_scam_type",
+    "string",
+    null
+   ]
+  ],
+  "rules": [
+   [
+    "FS-EXT-01",
+    "reports plausible",
+    "technical",
+    "range",
+    "reports",
+    "{\"min\": 0, \"max\": 5000}",
+    "warn"
+   ],
+   [
+    "FS-EXT-02",
+    "Known top_scam_type",
+    "business",
+    "allowed_values",
+    "top_scam_type",
+    "{\"values\": [\"Phishing\", \"Investment\", \"Romance\", \"Remote access\"]}",
+    "warn"
+   ]
+  ],
+  "gold": {
+   "transform_id": "FS-G07",
+   "industry": "fsi",
+   "gold_table": "risk_case_vs_scam_report",
+   "run_order": 220,
+   "sql_text": "WITH ev AS (SELECT d.state, to_date(v.raised_ts) AS obs_date, COUNT(*) AS risk_cases, SUM(CASE WHEN v.case_type = 'ACCOUNT_TAKEOVER' THEN 1 ELSE 0 END) AS urgent_risk_cases FROM silver.risk_case v JOIN silver.account d ON d.account_id = v.account_id AND d._is_current = true WHERE v._is_deleted = false GROUP BY d.state, to_date(v.raised_ts)) SELECT x.state, x.obs_date, x.reports, x.reported_loss_aud, x.phishing_share_pct, x.top_scam_type, COALESCE(ev.risk_cases, 0) AS risk_cases, COALESCE(ev.urgent_risk_cases, 0) AS urgent_risk_cases FROM silver.scam_report x LEFT JOIN ev ON ev.state = x.state AND ev.obs_date = x.obs_date WHERE x._is_deleted = false",
+   "description": "Public scam reports against risk cases by state",
+   "business_owner": "Financial Crime",
+   "consumers": "Power BI / Direct Lake",
+   "active": true
+  }
+ }
+}
