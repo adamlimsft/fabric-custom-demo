@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Local outputs from the generators (powerbi --offline, local checks)
+gold_csv/
+*.pbip.cache/
+.pbi/
+/out/
+/output/
+/tmp/
+
+# Power BI project local settings
+**/.pbi/localSettings.json
+**/.pbi/cache.abf
+
+# Editors and OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Packaged releases (attach zips to a GitHub Release instead of committing them)
+*.zip

@@ -1,0 +1,1301 @@
+{
+ "pack": {
+  "id": "healthcare",
+  "industry": "Healthcare",
+  "org": "Coastal Health Network",
+  "short": "CHN",
+  "prefix": "HC",
+  "tagline": "public health service running five hospitals",
+  "email_domain": "chn.example.com.au",
+  "region_col": "hospital",
+  "region_label": "hospital",
+  "regions": [
+   "Gosford",
+   "Wyong",
+   "Newcastle",
+   "Maitland",
+   "Tamworth"
+  ],
+  "name_words": [
+   "Banksia",
+   "Waratah",
+   "Wattle",
+   "Jacaranda",
+   "Grevillea",
+   "Bottlebrush",
+   "Kookaburra",
+   "Lyrebird",
+   "Pelican",
+   "Heron"
+  ],
+  "sys": {
+   "ops": {
+    "code": "pas",
+    "name": "Patient Administration System (on-prem SQL Server)",
+    "type": "Database",
+    "owner": "eHealth",
+    "fabric": "Mirroring for SQL Server vs Copy job incremental; check privacy obligations before replicating"
+   },
+   "tel": {
+    "code": "bms",
+    "name": "Bed management feed (15-min CSV) and flu surveillance",
+    "type": "File drop",
+    "owner": "Patient Flow",
+    "fabric": "Eventstream for real-time bed status; files to OneLake for batch"
+   },
+   "crm": {
+    "code": "crm",
+    "name": "Dynamics 365 patient engagement",
+    "type": "SaaS CRM",
+    "owner": "Patient Experience",
+    "fabric": "Link to Microsoft Fabric (Dataverse) or Copy job"
+   }
+  },
+  "entity": {
+   "table": "ward",
+   "src": "wards",
+   "label": "ward",
+   "plural": "wards",
+   "id": "ward_id",
+   "code": "ward_code",
+   "code_prefix": "WD",
+   "name_col": "ward_name",
+   "type_col": "ward_type",
+   "types": [
+    "EMERGENCY",
+    "ICU",
+    "MEDICAL",
+    "SURGICAL",
+    "MATERNITY"
+   ],
+   "status": [
+    "OPEN",
+    "PARTIAL",
+    "CLOSED",
+    "DECOMMISSIONED"
+   ],
+   "tier_col": "acuity_level",
+   "tier_label": "acuity level (1-5, 5 = highest)",
+   "cap_col": "bed_count",
+   "cap_label": "beds",
+   "cap_range": [
+    8,
+    48
+   ],
+   "start_col": "opened_date",
+   "start_years": [
+    1975,
+    2025
+   ],
+   "drift_col": "nurse_unit_manager",
+   "drift_values": [
+    "NUM roster A",
+    "NUM roster B",
+    "NUM roster C"
+   ],
+   "owner": "Clinical Operations",
+   "count": 120
+  },
+  "event": {
+   "table": "admission",
+   "src": "admissions",
+   "label": "admission",
+   "plural": "admissions",
+   "id": "admission_id",
+   "id_start": 800001,
+   "type_col": "admission_type",
+   "types": [
+    "EMERGENCY",
+    "ELECTIVE",
+    "TRANSFER",
+    "MATERNITY"
+   ],
+   "type_names": [
+    "Emergency",
+    "Elective",
+    "Inter-hospital transfer",
+    "Maternity"
+   ],
+   "urgent_type": "EMERGENCY",
+   "status": [
+    "ADMITTED",
+    "IN_TREATMENT",
+    "DISCHARGED",
+    "CANCELLED"
+   ],
+   "open_ts": "admit_ts",
+   "close_ts": "discharge_ts",
+   "open_verb": "admitted",
+   "close_verb": "discharged",
+   "amount_col": "episode_cost_aud",
+   "amount_range": [
+    900,
+    90000
+   ],
+   "qty_col": "nursing_hours",
+   "qty_range": [
+    2,
+    300
+   ],
+   "descriptions": [
+    "Chest pain observation",
+    "Hip replacement",
+    "Respiratory infection",
+    "Planned caesarean",
+    "Fractured wrist",
+    "Sepsis management",
+    "Day surgery",
+    "Cardiac monitoring"
+   ],
+   "owner": "Clinical Operations"
+  },
+  "reading": {
+   "table": "ward_occupancy",
+   "src": "ward_occupancy",
+   "label": "ward occupancy (15-min)",
+   "fact": "ward_occupancy",
+   "monitored": 24,
+   "monitored_types": [],
+   "metrics": [
+    {
+     "col": "occupancy_pct",
+     "label": "bed occupancy",
+     "unit": "%",
+     "base": 82,
+     "sd": 9,
+     "min": 0,
+     "max": 120,
+     "threshold": 95
+    },
+    {
+     "col": "patients_waiting",
+     "label": "patients waiting for a bed",
+     "unit": "patients",
+     "base": 3,
+     "sd": 2,
+     "min": 0,
+     "max": 200
+    },
+    {
+     "col": "nurses_on_shift",
+     "label": "nurses on shift",
+     "unit": "nurses",
+     "base": 9,
+     "sd": 2,
+     "min": 0,
+     "max": 200
+    }
+   ],
+   "sentinel": 999.9,
+   "owner": "Patient Flow"
+  },
+  "party": {
+   "table": "patient",
+   "src": "patients",
+   "label": "patient",
+   "plural": "patients",
+   "id": "patient_id",
+   "id_prefix": "P",
+   "sf_type": "contact",
+   "segment_col": "funding_type",
+   "segments": [
+    "Public",
+    "Private insured",
+    "DVA",
+    "Overseas visitor"
+   ],
+   "status": [
+    "Active",
+    "Deceased"
+   ],
+   "sensitive_col": "medicare_no",
+   "sensitive_label": "Medicare number",
+   "sensitive_treatment": "hash",
+   "owner": "Patient Experience",
+   "count": 300
+  },
+  "extra": {
+   "table": "flu_surveillance",
+   "src": "flu_surveillance",
+   "label": "influenza surveillance",
+   "sys": "tel",
+   "cols": [
+    {
+     "col": "ili_rate_per_1000",
+     "base": 12,
+     "sd": 6,
+     "min": 0,
+     "max": 500
+    },
+    {
+     "col": "lab_notifications",
+     "base": 25,
+     "sd": 12,
+     "min": 0,
+     "max": 5000
+    },
+    {
+     "col": "ed_presentations",
+     "base": 180,
+     "sd": 40,
+     "min": 0,
+     "max": 5000
+    }
+   ],
+   "cat_col": "alert_level",
+   "cat_values": [
+    "Low",
+    "Moderate",
+    "High",
+    "Very high"
+   ],
+   "owner": "Public Health",
+   "story": "flu activity against emergency admissions by hospital"
+  },
+  "alert": {
+   "stream": "bed_alert",
+   "label": "bed alert",
+   "codes": [
+    "ED_OVERCAPACITY",
+    "BED_BLOCK",
+    "CODE_BLUE"
+   ],
+   "storm": "ED surge"
+  },
+  "ref": {
+   "title": "Length-of-stay targets",
+   "owner": "Clinical Operations",
+   "rows": [
+    [
+     "EMERGENCY",
+     "Unplanned",
+     96,
+     "Emergency Medicine"
+    ],
+    [
+     "ELECTIVE",
+     "Planned",
+     72,
+     "Surgical Services"
+    ],
+    [
+     "TRANSFER",
+     "Transfer",
+     120,
+     "Patient Flow"
+    ],
+    [
+     "MATERNITY",
+     "Planned",
+     60,
+     "Women's Health"
+    ]
+   ]
+  },
+  "ai": {
+   "persona": "patient flow and clinical operations",
+   "cust": "state health departments, local health districts, private hospital groups, aged care",
+   "q_model": [
+    "Which hospital had the most emergency admissions this month?",
+    "Show average length of stay by admission type.",
+    "Which high-acuity wards have more than 10 patients currently admitted?"
+   ],
+   "q_agent": [
+    "Which 10 wards have the highest risk score and how many patients are currently admitted?",
+    "Compare average length of stay for emergency admissions by hospital.",
+    "Which wards went above 95% occupancy in the last 3 days?",
+    "What did elective admissions cost in Newcastle?",
+    "How many DVA patients are active per hospital?"
+   ],
+   "q_onto": [
+    "Show ICU wards in Gosford with emergency admissions still open and a high risk band.",
+    "For the ward with the highest occupancy, list current admissions and their episode cost.",
+    "Which patients are linked to wards that are partially closed?"
+   ]
+  },
+  "impact": {
+   "col": "access_block_cost_aud",
+   "label": "access-block cost at risk",
+   "open_cost": 1500,
+   "breach_cost": 2000,
+   "cap_rate": 500,
+   "rule": "$1,500 per open admission + $2,000 per 15-min window above 95% occupancy + beds x acuity x $500"
+  }
+ },
+ "source_system": [
+  {
+   "source_system": "pas",
+   "industry": "healthcare",
+   "display_name": "Patient Administration System (on-prem SQL Server)",
+   "system_type": "Database",
+   "connection_pattern": "On-premises data gateway -> pipeline Copy with watermark query",
+   "technical_owner": "eHealth",
+   "fabric_options": "Mirroring for SQL Server vs Copy job incremental; check privacy obligations before replicating"
+  },
+  {
+   "source_system": "bms",
+   "industry": "healthcare",
+   "display_name": "Bed management feed (15-min CSV) and flu surveillance",
+   "system_type": "File drop",
+   "connection_pattern": "Files dropped to OneLake (Files/landing) every 15 minutes",
+   "technical_owner": "Patient Flow",
+   "fabric_options": "Eventstream for real-time bed status; files to OneLake for batch"
+  },
+  {
+   "source_system": "crm",
+   "industry": "healthcare",
+   "display_name": "Dynamics 365 patient engagement",
+   "system_type": "SaaS CRM",
+   "connection_pattern": "REST/OData API -> JSON landed per day",
+   "technical_owner": "Patient Experience",
+   "fabric_options": "Link to Microsoft Fabric (Dataverse) or Copy job"
+  }
+ ],
+ "ingestion_object": [
+  {
+   "object_id": "HC_PAS_WARDS",
+   "industry": "healthcare",
+   "source_system": "pas",
+   "source_object": "wards",
+   "source_type": "database",
+   "ingest_method": "copy_db",
+   "landing_format": "csv",
+   "landing_path": "landing/pas/wards",
+   "read_options": "{\"header\": true, \"delimiter\": \",\"}",
+   "source_table": "src.wards",
+   "load_type": "incremental",
+   "watermark_column": "last_modified",
+   "primary_keys": "ward_id",
+   "dedupe_order_by": "last_modified DESC, _ingested_at DESC",
+   "bronze_table": "pas_wards",
+   "silver_table": "ward",
+   "silver_write_mode": "merge_scd2",
+   "load_group": "reference",
+   "priority": 10,
+   "sla_hours": 26,
+   "data_owner": "Clinical Operations",
+   "sensitivity": "Internal",
+   "active": true,
+   "description": "Ward register. SCD2 keeps status, acuity_level and bed_count history.",
+   "fabric_alternative": "Strong mirroring candidate - small, slowly changing, needed in near real time by operations"
+  },
+  {
+   "object_id": "HC_PAS_ADMISSIONS",
+   "industry": "healthcare",
+   "source_system": "pas",
+   "source_object": "admissions",
+   "source_type": "database",
+   "ingest_method": "copy_db",
+   "landing_format": "csv",
+   "landing_path": "landing/pas/admissions",
+   "read_options": "{\"header\": true, \"delimiter\": \",\"}",
+   "source_table": "src.admissions",
+   "load_type": "incremental",
+   "watermark_column": "last_modified",
+   "primary_keys": "admission_id",
+   "dedupe_order_by": "last_modified DESC, _ingested_at DESC",
+   "bronze_table": "pas_admissions",
+   "silver_table": "admission",
+   "silver_write_mode": "merge_scd1",
+   "load_group": "transactional",
+   "priority": 20,
+   "sla_hours": 26,
+   "data_owner": "Clinical Operations",
+   "sensitivity": "Internal",
+   "active": true,
+   "description": "Admissions - incremental by last_modified; can arrive before their ward (late-arriving).",
+   "fabric_alternative": "Copy job incremental or mirroring; keep the watermark query if the source is on-prem"
+  },
+  {
+   "object_id": "HC_BMS_WARD_OCCUPANCY",
+   "industry": "healthcare",
+   "source_system": "bms",
+   "source_object": "ward_occupancy",
+   "source_type": "file",
+   "ingest_method": "landed_file",
+   "landing_format": "csv",
+   "landing_path": "landing/bms/ward_occupancy",
+   "read_options": "{\"header\": true, \"delimiter\": \",\"}",
+   "source_table": null,
+   "load_type": "incremental",
+   "watermark_column": null,
+   "primary_keys": "ward_id,reading_ts",
+   "dedupe_order_by": "_ingested_at DESC",
+   "bronze_table": "bms_ward_occupancy",
+   "silver_table": "ward_occupancy",
+   "silver_write_mode": "insert_only",
+   "load_group": "telemetry",
+   "priority": 30,
+   "sla_hours": 2,
+   "data_owner": "Patient Flow",
+   "sensitivity": "Internal",
+   "active": true,
+   "description": "Ward occupancy (15-min) every 15 minutes, four micro-batch files a day. Insert-only and idempotent.",
+   "fabric_alternative": "Eventstream into Eventhouse for real time; keep this batch path for history and reconciliation"
+  },
+  {
+   "object_id": "HC_CRM_PATIENTS",
+   "industry": "healthcare",
+   "source_system": "crm",
+   "source_object": "patients",
+   "source_type": "api",
+   "ingest_method": "landed_file",
+   "landing_format": "json",
+   "landing_path": "landing/crm/patients",
+   "read_options": "{\"multiline\": true, \"json_root\": \"records\"}",
+   "source_table": null,
+   "load_type": "full",
+   "watermark_column": null,
+   "primary_keys": "patient_id",
+   "dedupe_order_by": "last_modified_ts DESC, _ingested_at DESC",
+   "bronze_table": "crm_patients",
+   "silver_table": "patient",
+   "silver_write_mode": "merge_scd1",
+   "load_group": "reference",
+   "priority": 15,
+   "sla_hours": 26,
+   "data_owner": "Patient Experience",
+   "sensitivity": "Confidential",
+   "active": true,
+   "description": "Patients - full daily snapshot from the CRM API (contains PII). Missing rows are soft-deleted.",
+   "fabric_alternative": "Copy job with the CRM connector; Dataverse-based CRMs can use Link to Fabric instead of copying"
+  }
+ ],
+ "column_map": [
+  {
+   "object_id": "HC_PAS_WARDS",
+   "column_order": 0,
+   "source_column": "ward_id",
+   "target_column": "ward_id",
+   "data_type": "int",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "HC_PAS_WARDS",
+   "column_order": 1,
+   "source_column": "ward_code",
+   "target_column": "ward_code",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "HC_PAS_WARDS",
+   "column_order": 2,
+   "source_column": "ward_name",
+   "target_column": "ward_name",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "HC_PAS_WARDS",
+   "column_order": 3,
+   "source_column": "ward_type",
+   "target_column": "ward_type",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "HC_PAS_WARDS",
+   "column_order": 4,
+   "source_column": "hospital",
+   "target_column": "hospital",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "HC_PAS_WARDS",
+   "column_order": 5,
+   "source_column": "status",
+   "target_column": "status",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "HC_PAS_WARDS",
+   "column_order": 6,
+   "source_column": "acuity_level",
+   "target_column": "acuity_level",
+   "data_type": "int",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "HC_PAS_WARDS",
+   "column_order": 7,
+   "source_column": "bed_count",
+   "target_column": "bed_count",
+   "data_type": "double",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "HC_PAS_WARDS",
+   "column_order": 8,
+   "source_column": "opened_date",
+   "target_column": "opened_date",
+   "data_type": "date",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "HC_PAS_WARDS",
+   "column_order": 9,
+   "source_column": "last_modified",
+   "target_column": "last_modified",
+   "data_type": "timestamp",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "HC_PAS_ADMISSIONS",
+   "column_order": 0,
+   "source_column": "admission_id",
+   "target_column": "admission_id",
+   "data_type": "int",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "HC_PAS_ADMISSIONS",
+   "column_order": 1,
+   "source_column": "ward_id",
+   "target_column": "ward_id",
+   "data_type": "int",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "HC_PAS_ADMISSIONS",
+   "column_order": 2,
+   "source_column": "admission_type",
+   "target_column": "admission_type",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "HC_PAS_ADMISSIONS",
+   "column_order": 3,
+   "source_column": "priority",
+   "target_column": "priority",
+   "data_type": "int",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "HC_PAS_ADMISSIONS",
+   "column_order": 4,
+   "source_column": "status",
+   "target_column": "status",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "HC_PAS_ADMISSIONS",
+   "column_order": 5,
+   "source_column": "admit_ts",
+   "target_column": "admit_ts",
+   "data_type": "timestamp",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "HC_PAS_ADMISSIONS",
+   "column_order": 6,
+   "source_column": "discharge_ts",
+   "target_column": "discharge_ts",
+   "data_type": "timestamp",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "HC_PAS_ADMISSIONS",
+   "column_order": 7,
+   "source_column": "episode_cost_aud",
+   "target_column": "episode_cost_aud",
+   "data_type": "decimal(12,2)",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "HC_PAS_ADMISSIONS",
+   "column_order": 8,
+   "source_column": "nursing_hours",
+   "target_column": "nursing_hours",
+   "data_type": "double",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "HC_PAS_ADMISSIONS",
+   "column_order": 9,
+   "source_column": "description",
+   "target_column": "description",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "HC_PAS_ADMISSIONS",
+   "column_order": 10,
+   "source_column": "last_modified",
+   "target_column": "last_modified",
+   "data_type": "timestamp",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "HC_BMS_WARD_OCCUPANCY",
+   "column_order": 0,
+   "source_column": "ward_id",
+   "target_column": "ward_id",
+   "data_type": "int",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "HC_BMS_WARD_OCCUPANCY",
+   "column_order": 1,
+   "source_column": "reading_time",
+   "target_column": "reading_ts",
+   "data_type": "timestamp",
+   "transform_expr": "to_timestamp(reading_time, 'dd/MM/yyyy HH:mm')",
+   "pii_treatment": "none",
+   "sensitivity": "none",
+   "description": ""
+  },
+  {
+   "object_id": "HC_BMS_WARD_OCCUPANCY",
+   "column_order": 2,
+   "source_column": "occupancy_pct",
+   "target_column": "occupancy_pct",
+   "data_type": "double",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "HC_BMS_WARD_OCCUPANCY",
+   "column_order": 3,
+   "source_column": "patients_waiting",
+   "target_column": "patients_waiting",
+   "data_type": "double",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "HC_BMS_WARD_OCCUPANCY",
+   "column_order": 4,
+   "source_column": "nurses_on_shift",
+   "target_column": "nurses_on_shift",
+   "data_type": "double",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "HC_CRM_PATIENTS",
+   "column_order": 0,
+   "source_column": "Id",
+   "target_column": "patient_id",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "HC_CRM_PATIENTS",
+   "column_order": 1,
+   "source_column": "FirstName",
+   "target_column": "first_name",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "drop",
+   "sensitivity": "Confidential",
+   "description": ""
+  },
+  {
+   "object_id": "HC_CRM_PATIENTS",
+   "column_order": 2,
+   "source_column": "LastName",
+   "target_column": "last_name",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "drop",
+   "sensitivity": "Confidential",
+   "description": ""
+  },
+  {
+   "object_id": "HC_CRM_PATIENTS",
+   "column_order": 3,
+   "source_column": "Email",
+   "target_column": "email_masked",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "mask_email",
+   "sensitivity": "Confidential",
+   "description": ""
+  },
+  {
+   "object_id": "HC_CRM_PATIENTS",
+   "column_order": 4,
+   "source_column": "MobilePhone",
+   "target_column": "mobile_masked",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "mask_phone",
+   "sensitivity": "Confidential",
+   "description": ""
+  },
+  {
+   "object_id": "HC_CRM_PATIENTS",
+   "column_order": 5,
+   "source_column": "Birthdate",
+   "target_column": "birth_year",
+   "data_type": "int",
+   "transform_expr": null,
+   "pii_treatment": "year_only",
+   "sensitivity": "Confidential",
+   "description": ""
+  },
+  {
+   "object_id": "HC_CRM_PATIENTS",
+   "column_order": 6,
+   "source_column": "MailingPostalCode",
+   "target_column": "postcode",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "HC_CRM_PATIENTS",
+   "column_order": 7,
+   "source_column": "Hospital__c",
+   "target_column": "hospital",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "HC_CRM_PATIENTS",
+   "column_order": 8,
+   "source_column": "FundingType__c",
+   "target_column": "funding_type",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "HC_CRM_PATIENTS",
+   "column_order": 9,
+   "source_column": "WardId__c",
+   "target_column": "ward_id",
+   "data_type": "int",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "HC_CRM_PATIENTS",
+   "column_order": 10,
+   "source_column": "Status__c",
+   "target_column": "status",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "HC_CRM_PATIENTS",
+   "column_order": 11,
+   "source_column": "MedicareNo__c",
+   "target_column": "medicare_no_hash",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "hash",
+   "sensitivity": "Restricted",
+   "description": ""
+  },
+  {
+   "object_id": "HC_CRM_PATIENTS",
+   "column_order": 12,
+   "source_column": "LastModifiedDate",
+   "target_column": "last_modified_ts",
+   "data_type": "timestamp",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  }
+ ],
+ "dq_rule": [
+  {
+   "rule_id": "HC-ENT-01",
+   "object_id": "HC_PAS_WARDS",
+   "rule_name": "Ward id present",
+   "rule_category": "technical",
+   "check_type": "not_null",
+   "column_name": "ward_id",
+   "params": "{}",
+   "severity": "fail",
+   "fail_threshold_pct": 0,
+   "rule_owner": "Data engineering",
+   "description": "Primary key must never be null",
+   "active": true
+  },
+  {
+   "rule_id": "HC-ENT-02",
+   "object_id": "HC_PAS_WARDS",
+   "rule_name": "Known ward_type",
+   "rule_category": "technical",
+   "check_type": "allowed_values",
+   "column_name": "ward_type",
+   "params": "{\"values\": [\"EMERGENCY\", \"ICU\", \"MEDICAL\", \"SURGICAL\", \"MATERNITY\"]}",
+   "severity": "warn",
+   "fail_threshold_pct": null,
+   "rule_owner": "Data engineering",
+   "description": "Unknown classes are kept but flagged for the data owner",
+   "active": true
+  },
+  {
+   "rule_id": "HC-ENT-03",
+   "object_id": "HC_PAS_WARDS",
+   "rule_name": "acuity_level between 1 and 5",
+   "rule_category": "technical",
+   "check_type": "range",
+   "column_name": "acuity_level",
+   "params": "{\"min\": 1, \"max\": 5}",
+   "severity": "warn",
+   "fail_threshold_pct": null,
+   "rule_owner": "Data engineering",
+   "description": "Out-of-range ratings usually mean a keying error in the source",
+   "active": true
+  },
+  {
+   "rule_id": "HC-ENT-04",
+   "object_id": "HC_PAS_WARDS",
+   "rule_name": "Known status",
+   "rule_category": "business",
+   "check_type": "allowed_values",
+   "column_name": "status",
+   "params": "{\"values\": [\"OPEN\", \"PARTIAL\", \"CLOSED\", \"DECOMMISSIONED\"]}",
+   "severity": "warn",
+   "fail_threshold_pct": null,
+   "rule_owner": "Clinical Operations",
+   "description": "Status list agreed with Clinical Operations",
+   "active": true
+  },
+  {
+   "rule_id": "HC-EVT-01",
+   "object_id": "HC_PAS_ADMISSIONS",
+   "rule_name": "Admission id present",
+   "rule_category": "technical",
+   "check_type": "not_null",
+   "column_name": "admission_id",
+   "params": "{}",
+   "severity": "fail",
+   "fail_threshold_pct": 0,
+   "rule_owner": "Data engineering",
+   "description": "Primary key must never be null",
+   "active": true
+  },
+  {
+   "rule_id": "HC-EVT-02",
+   "object_id": "HC_PAS_ADMISSIONS",
+   "rule_name": "Ward exists",
+   "rule_category": "technical",
+   "check_type": "referential",
+   "column_name": "ward_id",
+   "params": "{\"ref_table\": \"silver.ward\", \"ref_column\": \"ward_id\"}",
+   "severity": "quarantine",
+   "fail_threshold_pct": null,
+   "rule_owner": "Data engineering",
+   "description": "Held until the ward arrives (late-arriving reference data), then merged automatically",
+   "active": true
+  },
+  {
+   "rule_id": "HC-EVT-03",
+   "object_id": "HC_PAS_ADMISSIONS",
+   "rule_name": "Discharged after admitted",
+   "rule_category": "business",
+   "check_type": "expression",
+   "column_name": null,
+   "params": "{\"expr\": \"discharge_ts IS NULL OR discharge_ts >= admit_ts\"}",
+   "severity": "quarantine",
+   "fail_threshold_pct": null,
+   "rule_owner": "Clinical Operations",
+   "description": "A admission can't be discharged before it was admitted",
+   "active": true
+  },
+  {
+   "rule_id": "HC-EVT-04",
+   "object_id": "HC_PAS_ADMISSIONS",
+   "rule_name": "episode_cost_aud not negative",
+   "rule_category": "technical",
+   "check_type": "range",
+   "column_name": "episode_cost_aud",
+   "params": "{\"min\": 0}",
+   "severity": "warn",
+   "fail_threshold_pct": null,
+   "rule_owner": "Data engineering",
+   "description": "Negative values are sign errors in the source extract",
+   "active": true
+  },
+  {
+   "rule_id": "HC-EVT-05",
+   "object_id": "HC_PAS_ADMISSIONS",
+   "rule_name": "EMERGENCY is priority 1",
+   "rule_category": "business",
+   "check_type": "expression",
+   "column_name": null,
+   "params": "{\"expr\": \"admission_type <> 'EMERGENCY' OR priority = 1\"}",
+   "severity": "warn",
+   "fail_threshold_pct": null,
+   "rule_owner": "Clinical Operations",
+   "description": "Emergency admissions must be raised as priority 1",
+   "active": true
+  },
+  {
+   "rule_id": "HC-EVT-06",
+   "object_id": "HC_PAS_ADMISSIONS",
+   "rule_name": "admit_ts parses",
+   "rule_category": "technical",
+   "check_type": "not_null",
+   "column_name": "admit_ts",
+   "params": "{}",
+   "severity": "fail",
+   "fail_threshold_pct": 5,
+   "rule_owner": "Data engineering",
+   "description": "If more than 5% of timestamps fail to parse, the extract format has changed - stop the load",
+   "active": true
+  },
+  {
+   "rule_id": "HC-RDG-01",
+   "object_id": "HC_BMS_WARD_OCCUPANCY",
+   "rule_name": "Bed occupancy plausible",
+   "rule_category": "technical",
+   "check_type": "range",
+   "column_name": "occupancy_pct",
+   "params": "{\"min\": 0, \"max\": 120}",
+   "severity": "quarantine",
+   "fail_threshold_pct": null,
+   "rule_owner": "Data engineering",
+   "description": "Sensor fault values (e.g. 999.9) are quarantined, never averaged into Gold",
+   "active": true
+  },
+  {
+   "rule_id": "HC-RDG-02",
+   "object_id": "HC_BMS_WARD_OCCUPANCY",
+   "rule_name": "Ward known",
+   "rule_category": "technical",
+   "check_type": "referential",
+   "column_name": "ward_id",
+   "params": "{\"ref_table\": \"silver.ward\", \"ref_column\": \"ward_id\"}",
+   "severity": "warn",
+   "fail_threshold_pct": null,
+   "rule_owner": "Data engineering",
+   "description": "Readings for unknown tags are flagged",
+   "active": true
+  },
+  {
+   "rule_id": "HC-RDG-03",
+   "object_id": "HC_BMS_WARD_OCCUPANCY",
+   "rule_name": "Reading time parses",
+   "rule_category": "technical",
+   "check_type": "not_null",
+   "column_name": "reading_ts",
+   "params": "{}",
+   "severity": "fail",
+   "fail_threshold_pct": 5,
+   "rule_owner": "Data engineering",
+   "description": "Timestamp format change stops the load",
+   "active": true
+  },
+  {
+   "rule_id": "HC-PTY-01",
+   "object_id": "HC_CRM_PATIENTS",
+   "rule_name": "Patient id present",
+   "rule_category": "technical",
+   "check_type": "not_null",
+   "column_name": "patient_id",
+   "params": "{}",
+   "severity": "fail",
+   "fail_threshold_pct": 0,
+   "rule_owner": "Data engineering",
+   "description": "Primary key must never be null",
+   "active": true
+  },
+  {
+   "rule_id": "HC-PTY-02",
+   "object_id": "HC_CRM_PATIENTS",
+   "rule_name": "Email looks valid",
+   "rule_category": "technical",
+   "check_type": "regex",
+   "column_name": "email_masked",
+   "params": "{\"pattern\": \"^[^@\\\\s]+@[^@\\\\s]+\\\\.[^@\\\\s]+$\"}",
+   "severity": "warn",
+   "fail_threshold_pct": null,
+   "rule_owner": "Data engineering",
+   "description": "Checked on the raw value before masking",
+   "active": true
+  },
+  {
+   "rule_id": "HC-PTY-03",
+   "object_id": "HC_CRM_PATIENTS",
+   "rule_name": "Australian postcode",
+   "rule_category": "technical",
+   "check_type": "regex",
+   "column_name": "postcode",
+   "params": "{\"pattern\": \"^\\\\d{4}$\"}",
+   "severity": "warn",
+   "fail_threshold_pct": null,
+   "rule_owner": "Data engineering",
+   "description": "Four digits",
+   "active": true
+  },
+  {
+   "rule_id": "HC-PTY-04",
+   "object_id": "HC_CRM_PATIENTS",
+   "rule_name": "Known funding_type",
+   "rule_category": "business",
+   "check_type": "allowed_values",
+   "column_name": "funding_type",
+   "params": "{\"values\": [\"Public\", \"Private insured\", \"DVA\", \"Overseas visitor\"]}",
+   "severity": "warn",
+   "fail_threshold_pct": null,
+   "rule_owner": "Patient Experience",
+   "description": "Segments agreed with Patient Experience",
+   "active": true
+  }
+ ],
+ "gold_transform": [
+  {
+   "transform_id": "HC-G01",
+   "industry": "healthcare",
+   "gold_table": "dim_date",
+   "run_order": 100,
+   "sql_text": "SELECT CAST(date_format(d, 'yyyyMMdd') AS INT) AS date_key, d AS calendar_date, year(d) AS calendar_year, quarter(d) AS calendar_quarter, month(d) AS month_number, date_format(d, 'MMM') AS month_name, date_format(d, 'yyyy-MM') AS year_month, dayofmonth(d) AS day_of_month, date_format(d, 'EEE') AS day_name, CASE WHEN month(d) >= 7 THEN year(d) + 1 ELSE year(d) END AS fy_year, concat('FY', substring(CAST(CASE WHEN month(d) >= 7 THEN year(d) + 1 ELSE year(d) END AS STRING), 3, 2)) AS fy_label, CASE WHEN dayofweek(d) IN (1, 7) THEN true ELSE false END AS is_weekend FROM (SELECT explode(sequence(to_date('2020-01-01'), to_date('2028-12-31'), interval 1 day)) AS d) dates",
+   "description": "Calendar with Australian financial year",
+   "business_owner": "Data engineering",
+   "consumers": "Power BI / Direct Lake, data agent",
+   "active": true
+  },
+  {
+   "transform_id": "HC-G02",
+   "industry": "healthcare",
+   "gold_table": "dim_ward",
+   "run_order": 110,
+   "sql_text": "SELECT ward_id, ward_code, ward_name, ward_type, hospital, status, acuity_level, bed_count, opened_date, CAST(floor(months_between(current_date(), opened_date) / 12) AS INT) AS age_years, _valid_from AS version_valid_from FROM silver.ward WHERE _is_current = true",
+   "description": "Current view of the ward register (history stays in Silver SCD2)",
+   "business_owner": "Clinical Operations",
+   "consumers": "Power BI / Direct Lake, data agent",
+   "active": true
+  },
+  {
+   "transform_id": "HC-G03",
+   "industry": "healthcare",
+   "gold_table": "fact_admission",
+   "run_order": 120,
+   "sql_text": "SELECT v.admission_id, v.ward_id, v.admission_type, v.priority, v.status, v.admit_ts, v.discharge_ts, to_date(v.admit_ts) AS opened_date, CAST(date_format(v.admit_ts, 'yyyyMMdd') AS INT) AS opened_date_key, ROUND((unix_timestamp(v.discharge_ts) - unix_timestamp(v.admit_ts)) / 3600.0, 2) AS hours_to_close, CASE WHEN v.status IN ('ADMITTED', 'IN_TREATMENT') THEN 1 ELSE 0 END AS is_open, v.episode_cost_aud, v.nursing_hours, d.hospital, d.ward_type, d.acuity_level FROM silver.admission v LEFT JOIN silver.ward d ON d.ward_id = v.ward_id AND d._is_current = true WHERE v._is_deleted = false",
+   "description": "Admissions with duration and ward attributes",
+   "business_owner": "Clinical Operations",
+   "consumers": "Power BI / Direct Lake, data agent",
+   "active": true
+  },
+  {
+   "transform_id": "HC-G04",
+   "industry": "healthcare",
+   "gold_table": "fact_ward_occupancy_hourly",
+   "run_order": 130,
+   "sql_text": "SELECT ward_id, date_trunc('HOUR', reading_ts) AS reading_hour, to_date(reading_ts) AS reading_date, CAST(date_format(reading_ts, 'yyyyMMdd') AS INT) AS reading_date_key, COUNT(*) AS readings, ROUND(AVG(occupancy_pct), 2) AS avg_occupancy_pct, ROUND(MAX(occupancy_pct), 2) AS max_occupancy_pct, ROUND(AVG(patients_waiting), 2) AS avg_patients_waiting, ROUND(AVG(nurses_on_shift), 2) AS avg_nurses_on_shift, SUM(CASE WHEN occupancy_pct > 95 THEN 1 ELSE 0 END) AS breach_readings FROM silver.ward_occupancy GROUP BY ward_id, date_trunc('HOUR', reading_ts), to_date(reading_ts), CAST(date_format(reading_ts, 'yyyyMMdd') AS INT)",
+   "description": "Hourly ward occupancy (15-min) with threshold breaches",
+   "business_owner": "Patient Flow",
+   "consumers": "Power BI / Direct Lake, data agent",
+   "active": true
+  },
+  {
+   "transform_id": "HC-G05",
+   "industry": "healthcare",
+   "gold_table": "ward_health_scorecard",
+   "run_order": 200,
+   "sql_text": "WITH asat AS (SELECT MAX(to_date(admit_ts)) AS as_at FROM silver.admission), ev AS (SELECT v.ward_id, COUNT(*) AS admissions_12m, SUM(CASE WHEN v.status IN ('ADMITTED', 'IN_TREATMENT') THEN 1 ELSE 0 END) AS open_admissions, SUM(CASE WHEN v.admission_type = 'EMERGENCY' THEN 1 ELSE 0 END) AS urgent_admissions_12m, ROUND(SUM(v.episode_cost_aud), 2) AS episode_cost_aud_12m FROM silver.admission v CROSS JOIN asat WHERE v._is_deleted = false AND to_date(v.admit_ts) > add_months(asat.as_at, -12) GROUP BY v.ward_id), rd AS (SELECT ward_id, MAX(occupancy_pct) AS max_occupancy_pct, SUM(CASE WHEN occupancy_pct > 95 THEN 1 ELSE 0 END) AS breach_readings FROM silver.ward_occupancy GROUP BY ward_id), s AS (SELECT d.ward_id, d.ward_code, d.ward_name, d.ward_type, d.hospital, d.status, d.acuity_level, COALESCE(ev.admissions_12m, 0) AS admissions_12m, COALESCE(ev.open_admissions, 0) AS open_admissions, COALESCE(ev.urgent_admissions_12m, 0) AS urgent_admissions_12m, COALESCE(ev.episode_cost_aud_12m, 0) AS episode_cost_aud_12m, rd.max_occupancy_pct, COALESCE(rd.breach_readings, 0) AS breach_readings, d.bed_count FROM silver.ward d LEFT JOIN ev ON ev.ward_id = d.ward_id LEFT JOIN rd ON rd.ward_id = d.ward_id WHERE d._is_current = true) SELECT s.*, ROUND(LEAST(100, COALESCE(s.acuity_level, 1) * 8 + s.open_admissions * 6 + s.urgent_admissions_12m * 4 + LEAST(s.breach_readings, 20) * 1.5), 1) AS risk_score, CASE WHEN LEAST(100, COALESCE(s.acuity_level, 1) * 8 + s.open_admissions * 6 + s.urgent_admissions_12m * 4 + LEAST(s.breach_readings, 20) * 1.5) >= 60 THEN 'High' WHEN LEAST(100, COALESCE(s.acuity_level, 1) * 8 + s.open_admissions * 6 + s.urgent_admissions_12m * 4 + LEAST(s.breach_readings, 20) * 1.5) >= 35 THEN 'Medium' ELSE 'Low' END AS risk_band, ROUND(s.open_admissions * 1500 + LEAST(s.breach_readings, 20) * 2000 + COALESCE(s.bed_count, 0) * COALESCE(s.acuity_level, 1) * 500, 0) AS access_block_cost_aud FROM s",
+   "description": "Ward risk score - admissions, urgent work and bed occupancy breaches, plus access-block cost at risk in AUD (weights and dollar rates are illustrative: $1,500 per open admission + $2,000 per 15-min window above 95% occupancy + beds x acuity x $500)",
+   "business_owner": "Clinical Operations",
+   "consumers": "Power BI / Direct Lake, data agent",
+   "active": true
+  },
+  {
+   "transform_id": "HC-G06",
+   "industry": "healthcare",
+   "gold_table": "patient_summary",
+   "run_order": 210,
+   "sql_text": "SELECT hospital, funding_type, COUNT(*) AS patients, SUM(CASE WHEN status = 'Active' THEN 1 ELSE 0 END) AS active_patients, ROUND(AVG(year(current_date()) - birth_year), 1) AS avg_age, COUNT(DISTINCT ward_id) AS linked_wards FROM silver.patient WHERE _is_deleted = false GROUP BY hospital, funding_type",
+   "description": "Patients by hospital and funding_type",
+   "business_owner": "Patient Experience",
+   "consumers": "Power BI / Direct Lake, data agent",
+   "active": true
+  }
+ ],
+ "onboard": {
+  "object": {
+   "object_id": "HC_BMS_FLU_SURVEILLANCE",
+   "industry": "healthcare",
+   "source_system": "bms",
+   "source_object": "flu_surveillance",
+   "source_type": "file",
+   "ingest_method": "landed_file",
+   "landing_format": "txt",
+   "landing_path": "landing/bms/flu_surveillance",
+   "read_options": "{\"header\": true, \"delimiter\": \"|\"}",
+   "source_table": null,
+   "load_type": "incremental",
+   "watermark_column": null,
+   "primary_keys": "hospital,obs_date",
+   "dedupe_order_by": "_ingested_at DESC",
+   "bronze_table": "bms_flu_surveillance",
+   "silver_table": "flu_surveillance",
+   "silver_write_mode": "merge_scd1",
+   "load_group": "reference",
+   "priority": 25,
+   "sla_hours": 26,
+   "data_owner": "Public Health",
+   "sensitivity": "Public",
+   "active": true,
+   "description": "Daily influenza surveillance by hospital (pipe-delimited, dd/MM/yyyy) - onboarded live in the demo",
+   "fabric_alternative": "Public or partner feed - could be a REST copy, or a shortcut if the provider shares a folder"
+  },
+  "columns": [
+   [
+    "hospital",
+    "hospital",
+    "string",
+    null
+   ],
+   [
+    "obs_date",
+    "obs_date",
+    "date",
+    "to_date(obs_date, 'dd/MM/yyyy')"
+   ],
+   [
+    "ili_rate_per_1000",
+    "ili_rate_per_1000",
+    "double",
+    null
+   ],
+   [
+    "lab_notifications",
+    "lab_notifications",
+    "double",
+    null
+   ],
+   [
+    "ed_presentations",
+    "ed_presentations",
+    "double",
+    null
+   ],
+   [
+    "alert_level",
+    "alert_level",
+    "string",
+    null
+   ]
+  ],
+  "rules": [
+   [
+    "HC-EXT-01",
+    "ili_rate_per_1000 plausible",
+    "technical",
+    "range",
+    "ili_rate_per_1000",
+    "{\"min\": 0, \"max\": 500}",
+    "warn"
+   ],
+   [
+    "HC-EXT-02",
+    "Known alert_level",
+    "business",
+    "allowed_values",
+    "alert_level",
+    "{\"values\": [\"Low\", \"Moderate\", \"High\", \"Very high\"]}",
+    "warn"
+   ]
+  ],
+  "gold": {
+   "transform_id": "HC-G07",
+   "industry": "healthcare",
+   "gold_table": "admission_vs_flu_surveillance",
+   "run_order": 220,
+   "sql_text": "WITH ev AS (SELECT d.hospital, to_date(v.admit_ts) AS obs_date, COUNT(*) AS admissions, SUM(CASE WHEN v.admission_type = 'EMERGENCY' THEN 1 ELSE 0 END) AS urgent_admissions FROM silver.admission v JOIN silver.ward d ON d.ward_id = v.ward_id AND d._is_current = true WHERE v._is_deleted = false GROUP BY d.hospital, to_date(v.admit_ts)) SELECT x.hospital, x.obs_date, x.ili_rate_per_1000, x.lab_notifications, x.ed_presentations, x.alert_level, COALESCE(ev.admissions, 0) AS admissions, COALESCE(ev.urgent_admissions, 0) AS urgent_admissions FROM silver.flu_surveillance x LEFT JOIN ev ON ev.hospital = x.hospital AND ev.obs_date = x.obs_date WHERE x._is_deleted = false",
+   "description": "Flu activity against emergency admissions by hospital",
+   "business_owner": "Public Health",
+   "consumers": "Power BI / Direct Lake",
+   "active": true
+  }
+ }
+}

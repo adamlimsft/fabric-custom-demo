@@ -1,0 +1,1307 @@
+{
+ "pack": {
+  "id": "retail",
+  "industry": "Retail",
+  "org": "Wattle & Co",
+  "short": "WCO",
+  "prefix": "RT",
+  "tagline": "national supermarket and general merchandise retailer",
+  "email_domain": "wattle.example.com.au",
+  "region_col": "state",
+  "region_label": "state",
+  "regions": [
+   "NSW",
+   "VIC",
+   "QLD",
+   "WA",
+   "SA",
+   "TAS",
+   "ACT"
+  ],
+  "name_words": [
+   "Bondi",
+   "Chadstone",
+   "Chermside",
+   "Joondalup",
+   "Marion",
+   "Hobart",
+   "Belconnen",
+   "Penrith",
+   "Werribee",
+   "Southport"
+  ],
+  "sys": {
+   "ops": {
+    "code": "ret",
+    "name": "Retail back office, inventory and replenishment (on-prem SQL Server)",
+    "type": "Database",
+    "owner": "Retail Systems",
+    "fabric": "Mirroring for SQL Server vs Copy job incremental"
+   },
+   "tel": {
+    "code": "pos",
+    "name": "Store POS and stock-on-hand feed (15-min CSV) and promotions calendar",
+    "type": "Store file drop",
+    "owner": "Store Operations",
+    "fabric": "Eventstream for real-time POS / IoT; files to OneLake for batch"
+   },
+   "crm": {
+    "code": "loy",
+    "name": "Loyalty platform (Salesforce Marketing Cloud)",
+    "type": "SaaS",
+    "owner": "Loyalty & Marketing",
+    "fabric": "Copy job with the Salesforce connector"
+   }
+  },
+  "entity": {
+   "table": "store",
+   "src": "stores",
+   "label": "store",
+   "plural": "stores",
+   "id": "store_id",
+   "code": "store_code",
+   "code_prefix": "ST",
+   "name_col": "store_name",
+   "type_col": "store_format",
+   "types": [
+    "SUPERMARKET",
+    "EXPRESS",
+    "MEGASTORE",
+    "DARK_STORE",
+    "PHARMACY"
+   ],
+   "status": [
+    "TRADING",
+    "REFURBISHING",
+    "TEMP_CLOSED",
+    "CLOSED"
+   ],
+   "tier_col": "store_tier",
+   "tier_label": "store tier (1-5, 5 = flagship)",
+   "cap_col": "weekly_sales_kaud",
+   "cap_label": "average weekly sales (AUD thousands)",
+   "cap_range": [
+    150,
+    2500
+   ],
+   "start_col": "open_date",
+   "start_years": [
+    1980,
+    2025
+   ],
+   "drift_col": "area_manager",
+   "drift_values": [
+    "Metro North",
+    "Metro South",
+    "Regional"
+   ],
+   "owner": "Store Operations",
+   "count": 240
+  },
+  "event": {
+   "table": "stock_issue",
+   "src": "stock_issues",
+   "label": "stock issue",
+   "plural": "stock issues",
+   "id": "issue_id",
+   "id_start": 200001,
+   "type_col": "issue_type",
+   "types": [
+    "OUT_OF_STOCK",
+    "SHORT_DELIVERY",
+    "COLD_CHAIN",
+    "PRICE_ERROR"
+   ],
+   "type_names": [
+    "Out of stock",
+    "Short delivery",
+    "Cold-chain breach",
+    "Price or label error"
+   ],
+   "urgent_type": "OUT_OF_STOCK",
+   "status": [
+    "RAISED",
+    "ACTIONING",
+    "RESOLVED",
+    "CANCELLED"
+   ],
+   "open_ts": "raised_ts",
+   "close_ts": "resolved_ts",
+   "open_verb": "raised",
+   "close_verb": "resolved",
+   "amount_col": "lost_sales_aud",
+   "amount_range": [
+    0,
+    15000
+   ],
+   "qty_col": "units_affected",
+   "qty_range": [
+    1,
+    600
+   ],
+   "descriptions": [
+    "Promo line sold out by 10am",
+    "Supplier short-shipped milk",
+    "Freezer door left open overnight",
+    "Shelf label price mismatch",
+    "DC pick error on bread",
+    "Gap on shelf at peak",
+    "Late chilled delivery",
+    "Online substitution spike"
+   ],
+   "owner": "Supply Chain"
+  },
+  "reading": {
+   "table": "store_trading",
+   "src": "store_trading",
+   "label": "store trading and availability (15-min)",
+   "fact": "store_trading",
+   "monitored": 24,
+   "monitored_types": [
+    "SUPERMARKET",
+    "MEGASTORE",
+    "EXPRESS"
+   ],
+   "metrics": [
+    {
+     "col": "out_of_stock_pct",
+     "label": "out-of-stock lines",
+     "unit": "%",
+     "base": 3,
+     "sd": 1.2,
+     "min": 0,
+     "max": 100,
+     "threshold": 8
+    },
+    {
+     "col": "sales_aud",
+     "label": "sales",
+     "unit": "AUD",
+     "base": 4200,
+     "sd": 1500,
+     "min": 0,
+     "max": 500000
+    },
+    {
+     "col": "footfall",
+     "label": "footfall",
+     "unit": "people",
+     "base": 180,
+     "sd": 70,
+     "min": 0,
+     "max": 20000
+    }
+   ],
+   "sentinel": 999.9,
+   "owner": "Store Operations"
+  },
+  "party": {
+   "table": "loyalty_member",
+   "src": "loyalty_members",
+   "label": "loyalty member",
+   "plural": "loyalty members",
+   "id": "member_id",
+   "id_prefix": "LM",
+   "sf_type": "contact",
+   "segment_col": "tier",
+   "segments": [
+    "Gold",
+    "Silver",
+    "Bronze",
+    "Staff"
+   ],
+   "status": [
+    "Active",
+    "Lapsed"
+   ],
+   "sensitive_col": "card_token",
+   "sensitive_label": "payment card token",
+   "sensitive_treatment": "hash",
+   "owner": "Loyalty & Marketing",
+   "count": 300
+  },
+  "extra": {
+   "table": "promotion_day",
+   "src": "promotions",
+   "label": "promotions calendar",
+   "sys": "tel",
+   "cols": [
+    {
+     "col": "promo_lines",
+     "base": 120,
+     "sd": 40,
+     "min": 0,
+     "max": 5000
+    },
+    {
+     "col": "avg_discount_pct",
+     "base": 22,
+     "sd": 8,
+     "min": 0,
+     "max": 90
+    },
+    {
+     "col": "catalogue_reach_k",
+     "base": 300,
+     "sd": 90,
+     "min": 0,
+     "max": 10000
+    }
+   ],
+   "cat_col": "promo_type",
+   "cat_values": [
+    "Weekly specials",
+    "Half price",
+    "Seasonal",
+    "Clearance"
+   ],
+   "owner": "Merchandise",
+   "story": "promotions against out-of-stocks by state"
+  },
+  "alert": {
+   "stream": "store_alert",
+   "label": "store alert",
+   "codes": [
+    "OUT_OF_STOCK_SPIKE",
+    "FREEZER_FAULT",
+    "TILL_OFFLINE"
+   ],
+   "storm": "half-price promo rush"
+  },
+  "ref": {
+   "title": "Stock issue response targets",
+   "owner": "Supply Chain",
+   "rows": [
+    [
+     "OUT_OF_STOCK",
+     "Availability",
+     4,
+     "Store Replenishment"
+    ],
+    [
+     "SHORT_DELIVERY",
+     "Supply",
+     24,
+     "DC Operations"
+    ],
+    [
+     "COLD_CHAIN",
+     "Food safety",
+     2,
+     "Store Operations"
+    ],
+    [
+     "PRICE_ERROR",
+     "Compliance",
+     8,
+     "Pricing"
+    ]
+   ]
+  },
+  "impact": {
+   "col": "lost_sales_at_risk_aud",
+   "label": "lost sales at risk",
+   "open_cost": 1800,
+   "breach_cost": 900,
+   "cap_rate": 1,
+   "rule": "$1,800 per open stock issue + $900 per 15-min window above 8% out-of-stock + weekly sales (k) x store tier x $1"
+  },
+  "ai": {
+   "persona": "store operations, availability and supply chain",
+   "cust": "supermarkets, general merchandise and specialty retailers",
+   "q_model": [
+    "Which state lost the most sales to stock issues this month?",
+    "Show lost sales by issue type and month.",
+    "Which flagship stores (tier 4 or 5) have open out-of-stock issues?"
+   ],
+   "q_agent": [
+    "Which 10 stores have the most lost sales at risk, and how many stock issues are still open?",
+    "Compare average hours to resolve out-of-stock issues by state against the 4-hour target.",
+    "Which stores had more than 8% of lines out of stock in the last 3 days?",
+    "On half-price promotion days, do we see more out-of-stocks?",
+    "How many Gold loyalty members are active in each state?"
+   ],
+   "q_onto": [
+    "Show supermarkets in NSW with an open out-of-stock issue and a high risk band.",
+    "For the store with the worst availability, list its open stock issues and the lost sales.",
+    "Which loyalty members shop at stores with an open cold-chain breach?"
+   ]
+  }
+ },
+ "source_system": [
+  {
+   "source_system": "ret",
+   "industry": "retail",
+   "display_name": "Retail back office, inventory and replenishment (on-prem SQL Server)",
+   "system_type": "Database",
+   "connection_pattern": "On-premises data gateway -> pipeline Copy with watermark query",
+   "technical_owner": "Retail Systems",
+   "fabric_options": "Mirroring for SQL Server vs Copy job incremental"
+  },
+  {
+   "source_system": "pos",
+   "industry": "retail",
+   "display_name": "Store POS and stock-on-hand feed (15-min CSV) and promotions calendar",
+   "system_type": "Store file drop",
+   "connection_pattern": "Files dropped to OneLake (Files/landing) every 15 minutes",
+   "technical_owner": "Store Operations",
+   "fabric_options": "Eventstream for real-time POS / IoT; files to OneLake for batch"
+  },
+  {
+   "source_system": "loy",
+   "industry": "retail",
+   "display_name": "Loyalty platform (Salesforce Marketing Cloud)",
+   "system_type": "SaaS",
+   "connection_pattern": "REST/OData API -> JSON landed per day",
+   "technical_owner": "Loyalty & Marketing",
+   "fabric_options": "Copy job with the Salesforce connector"
+  }
+ ],
+ "ingestion_object": [
+  {
+   "object_id": "RT_RET_STORES",
+   "industry": "retail",
+   "source_system": "ret",
+   "source_object": "stores",
+   "source_type": "database",
+   "ingest_method": "copy_db",
+   "landing_format": "csv",
+   "landing_path": "landing/ret/stores",
+   "read_options": "{\"header\": true, \"delimiter\": \",\"}",
+   "source_table": "src.stores",
+   "load_type": "incremental",
+   "watermark_column": "last_modified",
+   "primary_keys": "store_id",
+   "dedupe_order_by": "last_modified DESC, _ingested_at DESC",
+   "bronze_table": "ret_stores",
+   "silver_table": "store",
+   "silver_write_mode": "merge_scd2",
+   "load_group": "reference",
+   "priority": 10,
+   "sla_hours": 26,
+   "data_owner": "Store Operations",
+   "sensitivity": "Internal",
+   "active": true,
+   "description": "Store register. SCD2 keeps status, store_tier and weekly_sales_kaud history.",
+   "fabric_alternative": "Strong mirroring candidate - small, slowly changing, needed in near real time by operations"
+  },
+  {
+   "object_id": "RT_RET_STOCK_ISSUES",
+   "industry": "retail",
+   "source_system": "ret",
+   "source_object": "stock_issues",
+   "source_type": "database",
+   "ingest_method": "copy_db",
+   "landing_format": "csv",
+   "landing_path": "landing/ret/stock_issues",
+   "read_options": "{\"header\": true, \"delimiter\": \",\"}",
+   "source_table": "src.stock_issues",
+   "load_type": "incremental",
+   "watermark_column": "last_modified",
+   "primary_keys": "issue_id",
+   "dedupe_order_by": "last_modified DESC, _ingested_at DESC",
+   "bronze_table": "ret_stock_issues",
+   "silver_table": "stock_issue",
+   "silver_write_mode": "merge_scd1",
+   "load_group": "transactional",
+   "priority": 20,
+   "sla_hours": 26,
+   "data_owner": "Supply Chain",
+   "sensitivity": "Internal",
+   "active": true,
+   "description": "Stock issues - incremental by last_modified; can arrive before their store (late-arriving).",
+   "fabric_alternative": "Copy job incremental or mirroring; keep the watermark query if the source is on-prem"
+  },
+  {
+   "object_id": "RT_POS_STORE_TRADING",
+   "industry": "retail",
+   "source_system": "pos",
+   "source_object": "store_trading",
+   "source_type": "file",
+   "ingest_method": "landed_file",
+   "landing_format": "csv",
+   "landing_path": "landing/pos/store_trading",
+   "read_options": "{\"header\": true, \"delimiter\": \",\"}",
+   "source_table": null,
+   "load_type": "incremental",
+   "watermark_column": null,
+   "primary_keys": "store_id,reading_ts",
+   "dedupe_order_by": "_ingested_at DESC",
+   "bronze_table": "pos_store_trading",
+   "silver_table": "store_trading",
+   "silver_write_mode": "insert_only",
+   "load_group": "telemetry",
+   "priority": 30,
+   "sla_hours": 2,
+   "data_owner": "Store Operations",
+   "sensitivity": "Internal",
+   "active": true,
+   "description": "Store trading and availability (15-min) every 15 minutes, four micro-batch files a day. Insert-only and idempotent.",
+   "fabric_alternative": "Eventstream into Eventhouse for real time; keep this batch path for history and reconciliation"
+  },
+  {
+   "object_id": "RT_LOY_LOYALTY_MEMBERS",
+   "industry": "retail",
+   "source_system": "loy",
+   "source_object": "loyalty_members",
+   "source_type": "api",
+   "ingest_method": "landed_file",
+   "landing_format": "json",
+   "landing_path": "landing/loy/loyalty_members",
+   "read_options": "{\"multiline\": true, \"json_root\": \"records\"}",
+   "source_table": null,
+   "load_type": "full",
+   "watermark_column": null,
+   "primary_keys": "member_id",
+   "dedupe_order_by": "last_modified_ts DESC, _ingested_at DESC",
+   "bronze_table": "loy_loyalty_members",
+   "silver_table": "loyalty_member",
+   "silver_write_mode": "merge_scd1",
+   "load_group": "reference",
+   "priority": 15,
+   "sla_hours": 26,
+   "data_owner": "Loyalty & Marketing",
+   "sensitivity": "Confidential",
+   "active": true,
+   "description": "Loyalty members - full daily snapshot from the CRM API (contains PII). Missing rows are soft-deleted.",
+   "fabric_alternative": "Copy job with the CRM connector; Dataverse-based CRMs can use Link to Fabric instead of copying"
+  }
+ ],
+ "column_map": [
+  {
+   "object_id": "RT_RET_STORES",
+   "column_order": 0,
+   "source_column": "store_id",
+   "target_column": "store_id",
+   "data_type": "int",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "RT_RET_STORES",
+   "column_order": 1,
+   "source_column": "store_code",
+   "target_column": "store_code",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "RT_RET_STORES",
+   "column_order": 2,
+   "source_column": "store_name",
+   "target_column": "store_name",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "RT_RET_STORES",
+   "column_order": 3,
+   "source_column": "store_format",
+   "target_column": "store_format",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "RT_RET_STORES",
+   "column_order": 4,
+   "source_column": "state",
+   "target_column": "state",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "RT_RET_STORES",
+   "column_order": 5,
+   "source_column": "status",
+   "target_column": "status",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "RT_RET_STORES",
+   "column_order": 6,
+   "source_column": "store_tier",
+   "target_column": "store_tier",
+   "data_type": "int",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "RT_RET_STORES",
+   "column_order": 7,
+   "source_column": "weekly_sales_kaud",
+   "target_column": "weekly_sales_kaud",
+   "data_type": "double",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "RT_RET_STORES",
+   "column_order": 8,
+   "source_column": "open_date",
+   "target_column": "open_date",
+   "data_type": "date",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "RT_RET_STORES",
+   "column_order": 9,
+   "source_column": "last_modified",
+   "target_column": "last_modified",
+   "data_type": "timestamp",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "RT_RET_STOCK_ISSUES",
+   "column_order": 0,
+   "source_column": "issue_id",
+   "target_column": "issue_id",
+   "data_type": "int",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "RT_RET_STOCK_ISSUES",
+   "column_order": 1,
+   "source_column": "store_id",
+   "target_column": "store_id",
+   "data_type": "int",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "RT_RET_STOCK_ISSUES",
+   "column_order": 2,
+   "source_column": "issue_type",
+   "target_column": "issue_type",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "RT_RET_STOCK_ISSUES",
+   "column_order": 3,
+   "source_column": "priority",
+   "target_column": "priority",
+   "data_type": "int",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "RT_RET_STOCK_ISSUES",
+   "column_order": 4,
+   "source_column": "status",
+   "target_column": "status",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "RT_RET_STOCK_ISSUES",
+   "column_order": 5,
+   "source_column": "raised_ts",
+   "target_column": "raised_ts",
+   "data_type": "timestamp",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "RT_RET_STOCK_ISSUES",
+   "column_order": 6,
+   "source_column": "resolved_ts",
+   "target_column": "resolved_ts",
+   "data_type": "timestamp",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "RT_RET_STOCK_ISSUES",
+   "column_order": 7,
+   "source_column": "lost_sales_aud",
+   "target_column": "lost_sales_aud",
+   "data_type": "decimal(12,2)",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "RT_RET_STOCK_ISSUES",
+   "column_order": 8,
+   "source_column": "units_affected",
+   "target_column": "units_affected",
+   "data_type": "double",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "RT_RET_STOCK_ISSUES",
+   "column_order": 9,
+   "source_column": "description",
+   "target_column": "description",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "RT_RET_STOCK_ISSUES",
+   "column_order": 10,
+   "source_column": "last_modified",
+   "target_column": "last_modified",
+   "data_type": "timestamp",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "RT_POS_STORE_TRADING",
+   "column_order": 0,
+   "source_column": "store_id",
+   "target_column": "store_id",
+   "data_type": "int",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "RT_POS_STORE_TRADING",
+   "column_order": 1,
+   "source_column": "reading_time",
+   "target_column": "reading_ts",
+   "data_type": "timestamp",
+   "transform_expr": "to_timestamp(reading_time, 'dd/MM/yyyy HH:mm')",
+   "pii_treatment": "none",
+   "sensitivity": "none",
+   "description": ""
+  },
+  {
+   "object_id": "RT_POS_STORE_TRADING",
+   "column_order": 2,
+   "source_column": "out_of_stock_pct",
+   "target_column": "out_of_stock_pct",
+   "data_type": "double",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "RT_POS_STORE_TRADING",
+   "column_order": 3,
+   "source_column": "sales_aud",
+   "target_column": "sales_aud",
+   "data_type": "double",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "RT_POS_STORE_TRADING",
+   "column_order": 4,
+   "source_column": "footfall",
+   "target_column": "footfall",
+   "data_type": "double",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "RT_LOY_LOYALTY_MEMBERS",
+   "column_order": 0,
+   "source_column": "Id",
+   "target_column": "member_id",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "RT_LOY_LOYALTY_MEMBERS",
+   "column_order": 1,
+   "source_column": "FirstName",
+   "target_column": "first_name",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "drop",
+   "sensitivity": "Confidential",
+   "description": ""
+  },
+  {
+   "object_id": "RT_LOY_LOYALTY_MEMBERS",
+   "column_order": 2,
+   "source_column": "LastName",
+   "target_column": "last_name",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "drop",
+   "sensitivity": "Confidential",
+   "description": ""
+  },
+  {
+   "object_id": "RT_LOY_LOYALTY_MEMBERS",
+   "column_order": 3,
+   "source_column": "Email",
+   "target_column": "email_masked",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "mask_email",
+   "sensitivity": "Confidential",
+   "description": ""
+  },
+  {
+   "object_id": "RT_LOY_LOYALTY_MEMBERS",
+   "column_order": 4,
+   "source_column": "MobilePhone",
+   "target_column": "mobile_masked",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "mask_phone",
+   "sensitivity": "Confidential",
+   "description": ""
+  },
+  {
+   "object_id": "RT_LOY_LOYALTY_MEMBERS",
+   "column_order": 5,
+   "source_column": "Birthdate",
+   "target_column": "birth_year",
+   "data_type": "int",
+   "transform_expr": null,
+   "pii_treatment": "year_only",
+   "sensitivity": "Confidential",
+   "description": ""
+  },
+  {
+   "object_id": "RT_LOY_LOYALTY_MEMBERS",
+   "column_order": 6,
+   "source_column": "MailingPostalCode",
+   "target_column": "postcode",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "RT_LOY_LOYALTY_MEMBERS",
+   "column_order": 7,
+   "source_column": "State__c",
+   "target_column": "state",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "RT_LOY_LOYALTY_MEMBERS",
+   "column_order": 8,
+   "source_column": "Tier__c",
+   "target_column": "tier",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "RT_LOY_LOYALTY_MEMBERS",
+   "column_order": 9,
+   "source_column": "StoreId__c",
+   "target_column": "store_id",
+   "data_type": "int",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "RT_LOY_LOYALTY_MEMBERS",
+   "column_order": 10,
+   "source_column": "Status__c",
+   "target_column": "status",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "RT_LOY_LOYALTY_MEMBERS",
+   "column_order": 11,
+   "source_column": "CardToken__c",
+   "target_column": "card_token_hash",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "hash",
+   "sensitivity": "Restricted",
+   "description": ""
+  },
+  {
+   "object_id": "RT_LOY_LOYALTY_MEMBERS",
+   "column_order": 12,
+   "source_column": "LastModifiedDate",
+   "target_column": "last_modified_ts",
+   "data_type": "timestamp",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  }
+ ],
+ "dq_rule": [
+  {
+   "rule_id": "RT-ENT-01",
+   "object_id": "RT_RET_STORES",
+   "rule_name": "Store id present",
+   "rule_category": "technical",
+   "check_type": "not_null",
+   "column_name": "store_id",
+   "params": "{}",
+   "severity": "fail",
+   "fail_threshold_pct": 0,
+   "rule_owner": "Data engineering",
+   "description": "Primary key must never be null",
+   "active": true
+  },
+  {
+   "rule_id": "RT-ENT-02",
+   "object_id": "RT_RET_STORES",
+   "rule_name": "Known store_format",
+   "rule_category": "technical",
+   "check_type": "allowed_values",
+   "column_name": "store_format",
+   "params": "{\"values\": [\"SUPERMARKET\", \"EXPRESS\", \"MEGASTORE\", \"DARK_STORE\", \"PHARMACY\"]}",
+   "severity": "warn",
+   "fail_threshold_pct": null,
+   "rule_owner": "Data engineering",
+   "description": "Unknown classes are kept but flagged for the data owner",
+   "active": true
+  },
+  {
+   "rule_id": "RT-ENT-03",
+   "object_id": "RT_RET_STORES",
+   "rule_name": "store_tier between 1 and 5",
+   "rule_category": "technical",
+   "check_type": "range",
+   "column_name": "store_tier",
+   "params": "{\"min\": 1, \"max\": 5}",
+   "severity": "warn",
+   "fail_threshold_pct": null,
+   "rule_owner": "Data engineering",
+   "description": "Out-of-range ratings usually mean a keying error in the source",
+   "active": true
+  },
+  {
+   "rule_id": "RT-ENT-04",
+   "object_id": "RT_RET_STORES",
+   "rule_name": "Known status",
+   "rule_category": "business",
+   "check_type": "allowed_values",
+   "column_name": "status",
+   "params": "{\"values\": [\"TRADING\", \"REFURBISHING\", \"TEMP_CLOSED\", \"CLOSED\"]}",
+   "severity": "warn",
+   "fail_threshold_pct": null,
+   "rule_owner": "Store Operations",
+   "description": "Status list agreed with Store Operations",
+   "active": true
+  },
+  {
+   "rule_id": "RT-EVT-01",
+   "object_id": "RT_RET_STOCK_ISSUES",
+   "rule_name": "Stock issue id present",
+   "rule_category": "technical",
+   "check_type": "not_null",
+   "column_name": "issue_id",
+   "params": "{}",
+   "severity": "fail",
+   "fail_threshold_pct": 0,
+   "rule_owner": "Data engineering",
+   "description": "Primary key must never be null",
+   "active": true
+  },
+  {
+   "rule_id": "RT-EVT-02",
+   "object_id": "RT_RET_STOCK_ISSUES",
+   "rule_name": "Store exists",
+   "rule_category": "technical",
+   "check_type": "referential",
+   "column_name": "store_id",
+   "params": "{\"ref_table\": \"silver.store\", \"ref_column\": \"store_id\"}",
+   "severity": "quarantine",
+   "fail_threshold_pct": null,
+   "rule_owner": "Data engineering",
+   "description": "Held until the store arrives (late-arriving reference data), then merged automatically",
+   "active": true
+  },
+  {
+   "rule_id": "RT-EVT-03",
+   "object_id": "RT_RET_STOCK_ISSUES",
+   "rule_name": "Resolved after raised",
+   "rule_category": "business",
+   "check_type": "expression",
+   "column_name": null,
+   "params": "{\"expr\": \"resolved_ts IS NULL OR resolved_ts >= raised_ts\"}",
+   "severity": "quarantine",
+   "fail_threshold_pct": null,
+   "rule_owner": "Supply Chain",
+   "description": "A stock issue can't be resolved before it was raised",
+   "active": true
+  },
+  {
+   "rule_id": "RT-EVT-04",
+   "object_id": "RT_RET_STOCK_ISSUES",
+   "rule_name": "lost_sales_aud not negative",
+   "rule_category": "technical",
+   "check_type": "range",
+   "column_name": "lost_sales_aud",
+   "params": "{\"min\": 0}",
+   "severity": "warn",
+   "fail_threshold_pct": null,
+   "rule_owner": "Data engineering",
+   "description": "Negative values are sign errors in the source extract",
+   "active": true
+  },
+  {
+   "rule_id": "RT-EVT-05",
+   "object_id": "RT_RET_STOCK_ISSUES",
+   "rule_name": "OUT_OF_STOCK is priority 1",
+   "rule_category": "business",
+   "check_type": "expression",
+   "column_name": null,
+   "params": "{\"expr\": \"issue_type <> 'OUT_OF_STOCK' OR priority = 1\"}",
+   "severity": "warn",
+   "fail_threshold_pct": null,
+   "rule_owner": "Supply Chain",
+   "description": "Out of stock stock issues must be raised as priority 1",
+   "active": true
+  },
+  {
+   "rule_id": "RT-EVT-06",
+   "object_id": "RT_RET_STOCK_ISSUES",
+   "rule_name": "raised_ts parses",
+   "rule_category": "technical",
+   "check_type": "not_null",
+   "column_name": "raised_ts",
+   "params": "{}",
+   "severity": "fail",
+   "fail_threshold_pct": 5,
+   "rule_owner": "Data engineering",
+   "description": "If more than 5% of timestamps fail to parse, the extract format has changed - stop the load",
+   "active": true
+  },
+  {
+   "rule_id": "RT-RDG-01",
+   "object_id": "RT_POS_STORE_TRADING",
+   "rule_name": "Out-of-stock lines plausible",
+   "rule_category": "technical",
+   "check_type": "range",
+   "column_name": "out_of_stock_pct",
+   "params": "{\"min\": 0, \"max\": 100}",
+   "severity": "quarantine",
+   "fail_threshold_pct": null,
+   "rule_owner": "Data engineering",
+   "description": "Sensor fault values (e.g. 999.9) are quarantined, never averaged into Gold",
+   "active": true
+  },
+  {
+   "rule_id": "RT-RDG-02",
+   "object_id": "RT_POS_STORE_TRADING",
+   "rule_name": "Store known",
+   "rule_category": "technical",
+   "check_type": "referential",
+   "column_name": "store_id",
+   "params": "{\"ref_table\": \"silver.store\", \"ref_column\": \"store_id\"}",
+   "severity": "warn",
+   "fail_threshold_pct": null,
+   "rule_owner": "Data engineering",
+   "description": "Readings for unknown tags are flagged",
+   "active": true
+  },
+  {
+   "rule_id": "RT-RDG-03",
+   "object_id": "RT_POS_STORE_TRADING",
+   "rule_name": "Reading time parses",
+   "rule_category": "technical",
+   "check_type": "not_null",
+   "column_name": "reading_ts",
+   "params": "{}",
+   "severity": "fail",
+   "fail_threshold_pct": 5,
+   "rule_owner": "Data engineering",
+   "description": "Timestamp format change stops the load",
+   "active": true
+  },
+  {
+   "rule_id": "RT-PTY-01",
+   "object_id": "RT_LOY_LOYALTY_MEMBERS",
+   "rule_name": "Loyalty member id present",
+   "rule_category": "technical",
+   "check_type": "not_null",
+   "column_name": "member_id",
+   "params": "{}",
+   "severity": "fail",
+   "fail_threshold_pct": 0,
+   "rule_owner": "Data engineering",
+   "description": "Primary key must never be null",
+   "active": true
+  },
+  {
+   "rule_id": "RT-PTY-02",
+   "object_id": "RT_LOY_LOYALTY_MEMBERS",
+   "rule_name": "Email looks valid",
+   "rule_category": "technical",
+   "check_type": "regex",
+   "column_name": "email_masked",
+   "params": "{\"pattern\": \"^[^@\\\\s]+@[^@\\\\s]+\\\\.[^@\\\\s]+$\"}",
+   "severity": "warn",
+   "fail_threshold_pct": null,
+   "rule_owner": "Data engineering",
+   "description": "Checked on the raw value before masking",
+   "active": true
+  },
+  {
+   "rule_id": "RT-PTY-03",
+   "object_id": "RT_LOY_LOYALTY_MEMBERS",
+   "rule_name": "Australian postcode",
+   "rule_category": "technical",
+   "check_type": "regex",
+   "column_name": "postcode",
+   "params": "{\"pattern\": \"^\\\\d{4}$\"}",
+   "severity": "warn",
+   "fail_threshold_pct": null,
+   "rule_owner": "Data engineering",
+   "description": "Four digits",
+   "active": true
+  },
+  {
+   "rule_id": "RT-PTY-04",
+   "object_id": "RT_LOY_LOYALTY_MEMBERS",
+   "rule_name": "Known tier",
+   "rule_category": "business",
+   "check_type": "allowed_values",
+   "column_name": "tier",
+   "params": "{\"values\": [\"Gold\", \"Silver\", \"Bronze\", \"Staff\"]}",
+   "severity": "warn",
+   "fail_threshold_pct": null,
+   "rule_owner": "Loyalty & Marketing",
+   "description": "Segments agreed with Loyalty & Marketing",
+   "active": true
+  }
+ ],
+ "gold_transform": [
+  {
+   "transform_id": "RT-G01",
+   "industry": "retail",
+   "gold_table": "dim_date",
+   "run_order": 100,
+   "sql_text": "SELECT CAST(date_format(d, 'yyyyMMdd') AS INT) AS date_key, d AS calendar_date, year(d) AS calendar_year, quarter(d) AS calendar_quarter, month(d) AS month_number, date_format(d, 'MMM') AS month_name, date_format(d, 'yyyy-MM') AS year_month, dayofmonth(d) AS day_of_month, date_format(d, 'EEE') AS day_name, CASE WHEN month(d) >= 7 THEN year(d) + 1 ELSE year(d) END AS fy_year, concat('FY', substring(CAST(CASE WHEN month(d) >= 7 THEN year(d) + 1 ELSE year(d) END AS STRING), 3, 2)) AS fy_label, CASE WHEN dayofweek(d) IN (1, 7) THEN true ELSE false END AS is_weekend FROM (SELECT explode(sequence(to_date('2020-01-01'), to_date('2028-12-31'), interval 1 day)) AS d) dates",
+   "description": "Calendar with Australian financial year",
+   "business_owner": "Data engineering",
+   "consumers": "Power BI / Direct Lake, data agent",
+   "active": true
+  },
+  {
+   "transform_id": "RT-G02",
+   "industry": "retail",
+   "gold_table": "dim_store",
+   "run_order": 110,
+   "sql_text": "SELECT store_id, store_code, store_name, store_format, state, status, store_tier, weekly_sales_kaud, open_date, CAST(floor(months_between(current_date(), open_date) / 12) AS INT) AS age_years, _valid_from AS version_valid_from FROM silver.store WHERE _is_current = true",
+   "description": "Current view of the store register (history stays in Silver SCD2)",
+   "business_owner": "Store Operations",
+   "consumers": "Power BI / Direct Lake, data agent",
+   "active": true
+  },
+  {
+   "transform_id": "RT-G03",
+   "industry": "retail",
+   "gold_table": "fact_stock_issue",
+   "run_order": 120,
+   "sql_text": "SELECT v.issue_id, v.store_id, v.issue_type, v.priority, v.status, v.raised_ts, v.resolved_ts, to_date(v.raised_ts) AS opened_date, CAST(date_format(v.raised_ts, 'yyyyMMdd') AS INT) AS opened_date_key, ROUND((unix_timestamp(v.resolved_ts) - unix_timestamp(v.raised_ts)) / 3600.0, 2) AS hours_to_close, CASE WHEN v.status IN ('RAISED', 'ACTIONING') THEN 1 ELSE 0 END AS is_open, v.lost_sales_aud, v.units_affected, d.state, d.store_format, d.store_tier FROM silver.stock_issue v LEFT JOIN silver.store d ON d.store_id = v.store_id AND d._is_current = true WHERE v._is_deleted = false",
+   "description": "Stock issues with duration and store attributes",
+   "business_owner": "Supply Chain",
+   "consumers": "Power BI / Direct Lake, data agent",
+   "active": true
+  },
+  {
+   "transform_id": "RT-G04",
+   "industry": "retail",
+   "gold_table": "fact_store_trading_hourly",
+   "run_order": 130,
+   "sql_text": "SELECT store_id, date_trunc('HOUR', reading_ts) AS reading_hour, to_date(reading_ts) AS reading_date, CAST(date_format(reading_ts, 'yyyyMMdd') AS INT) AS reading_date_key, COUNT(*) AS readings, ROUND(AVG(out_of_stock_pct), 2) AS avg_out_of_stock_pct, ROUND(MAX(out_of_stock_pct), 2) AS max_out_of_stock_pct, ROUND(AVG(sales_aud), 2) AS avg_sales_aud, ROUND(AVG(footfall), 2) AS avg_footfall, SUM(CASE WHEN out_of_stock_pct > 8 THEN 1 ELSE 0 END) AS breach_readings FROM silver.store_trading GROUP BY store_id, date_trunc('HOUR', reading_ts), to_date(reading_ts), CAST(date_format(reading_ts, 'yyyyMMdd') AS INT)",
+   "description": "Hourly store trading and availability (15-min) with threshold breaches",
+   "business_owner": "Store Operations",
+   "consumers": "Power BI / Direct Lake, data agent",
+   "active": true
+  },
+  {
+   "transform_id": "RT-G05",
+   "industry": "retail",
+   "gold_table": "store_health_scorecard",
+   "run_order": 200,
+   "sql_text": "WITH asat AS (SELECT MAX(to_date(raised_ts)) AS as_at FROM silver.stock_issue), ev AS (SELECT v.store_id, COUNT(*) AS stock_issues_12m, SUM(CASE WHEN v.status IN ('RAISED', 'ACTIONING') THEN 1 ELSE 0 END) AS open_stock_issues, SUM(CASE WHEN v.issue_type = 'OUT_OF_STOCK' THEN 1 ELSE 0 END) AS urgent_stock_issues_12m, ROUND(SUM(v.lost_sales_aud), 2) AS lost_sales_aud_12m FROM silver.stock_issue v CROSS JOIN asat WHERE v._is_deleted = false AND to_date(v.raised_ts) > add_months(asat.as_at, -12) GROUP BY v.store_id), rd AS (SELECT store_id, MAX(out_of_stock_pct) AS max_out_of_stock_pct, SUM(CASE WHEN out_of_stock_pct > 8 THEN 1 ELSE 0 END) AS breach_readings FROM silver.store_trading GROUP BY store_id), s AS (SELECT d.store_id, d.store_code, d.store_name, d.store_format, d.state, d.status, d.store_tier, COALESCE(ev.stock_issues_12m, 0) AS stock_issues_12m, COALESCE(ev.open_stock_issues, 0) AS open_stock_issues, COALESCE(ev.urgent_stock_issues_12m, 0) AS urgent_stock_issues_12m, COALESCE(ev.lost_sales_aud_12m, 0) AS lost_sales_aud_12m, rd.max_out_of_stock_pct, COALESCE(rd.breach_readings, 0) AS breach_readings, d.weekly_sales_kaud FROM silver.store d LEFT JOIN ev ON ev.store_id = d.store_id LEFT JOIN rd ON rd.store_id = d.store_id WHERE d._is_current = true) SELECT s.*, ROUND(LEAST(100, COALESCE(s.store_tier, 1) * 8 + s.open_stock_issues * 6 + s.urgent_stock_issues_12m * 4 + LEAST(s.breach_readings, 20) * 1.5), 1) AS risk_score, CASE WHEN LEAST(100, COALESCE(s.store_tier, 1) * 8 + s.open_stock_issues * 6 + s.urgent_stock_issues_12m * 4 + LEAST(s.breach_readings, 20) * 1.5) >= 60 THEN 'High' WHEN LEAST(100, COALESCE(s.store_tier, 1) * 8 + s.open_stock_issues * 6 + s.urgent_stock_issues_12m * 4 + LEAST(s.breach_readings, 20) * 1.5) >= 35 THEN 'Medium' ELSE 'Low' END AS risk_band, ROUND(s.open_stock_issues * 1800 + LEAST(s.breach_readings, 20) * 900 + COALESCE(s.weekly_sales_kaud, 0) * COALESCE(s.store_tier, 1) * 1, 0) AS lost_sales_at_risk_aud FROM s",
+   "description": "Store risk score - stock issues, urgent work and out-of-stock lines breaches, plus lost sales at risk in AUD (weights and dollar rates are illustrative: $1,800 per open stock issue + $900 per 15-min window above 8% out-of-stock + weekly sales (k) x store tier x $1)",
+   "business_owner": "Store Operations",
+   "consumers": "Power BI / Direct Lake, data agent",
+   "active": true
+  },
+  {
+   "transform_id": "RT-G06",
+   "industry": "retail",
+   "gold_table": "loyalty_member_summary",
+   "run_order": 210,
+   "sql_text": "SELECT state, tier, COUNT(*) AS loyalty_members, SUM(CASE WHEN status = 'Active' THEN 1 ELSE 0 END) AS active_loyalty_members, ROUND(AVG(year(current_date()) - birth_year), 1) AS avg_age, COUNT(DISTINCT store_id) AS linked_stores FROM silver.loyalty_member WHERE _is_deleted = false GROUP BY state, tier",
+   "description": "Loyalty members by state and tier",
+   "business_owner": "Loyalty & Marketing",
+   "consumers": "Power BI / Direct Lake, data agent",
+   "active": true
+  }
+ ],
+ "onboard": {
+  "object": {
+   "object_id": "RT_POS_PROMOTIONS",
+   "industry": "retail",
+   "source_system": "pos",
+   "source_object": "promotions",
+   "source_type": "file",
+   "ingest_method": "landed_file",
+   "landing_format": "txt",
+   "landing_path": "landing/pos/promotions",
+   "read_options": "{\"header\": true, \"delimiter\": \"|\"}",
+   "source_table": null,
+   "load_type": "incremental",
+   "watermark_column": null,
+   "primary_keys": "state,obs_date",
+   "dedupe_order_by": "_ingested_at DESC",
+   "bronze_table": "pos_promotions",
+   "silver_table": "promotion_day",
+   "silver_write_mode": "merge_scd1",
+   "load_group": "reference",
+   "priority": 25,
+   "sla_hours": 26,
+   "data_owner": "Merchandise",
+   "sensitivity": "Public",
+   "active": true,
+   "description": "Daily promotions calendar by state (pipe-delimited, dd/MM/yyyy) - onboarded live in the demo",
+   "fabric_alternative": "Public or partner feed - could be a REST copy, or a shortcut if the provider shares a folder"
+  },
+  "columns": [
+   [
+    "state",
+    "state",
+    "string",
+    null
+   ],
+   [
+    "obs_date",
+    "obs_date",
+    "date",
+    "to_date(obs_date, 'dd/MM/yyyy')"
+   ],
+   [
+    "promo_lines",
+    "promo_lines",
+    "double",
+    null
+   ],
+   [
+    "avg_discount_pct",
+    "avg_discount_pct",
+    "double",
+    null
+   ],
+   [
+    "catalogue_reach_k",
+    "catalogue_reach_k",
+    "double",
+    null
+   ],
+   [
+    "promo_type",
+    "promo_type",
+    "string",
+    null
+   ]
+  ],
+  "rules": [
+   [
+    "RT-EXT-01",
+    "promo_lines plausible",
+    "technical",
+    "range",
+    "promo_lines",
+    "{\"min\": 0, \"max\": 5000}",
+    "warn"
+   ],
+   [
+    "RT-EXT-02",
+    "Known promo_type",
+    "business",
+    "allowed_values",
+    "promo_type",
+    "{\"values\": [\"Weekly specials\", \"Half price\", \"Seasonal\", \"Clearance\"]}",
+    "warn"
+   ]
+  ],
+  "gold": {
+   "transform_id": "RT-G07",
+   "industry": "retail",
+   "gold_table": "stock_issue_vs_promotion_day",
+   "run_order": 220,
+   "sql_text": "WITH ev AS (SELECT d.state, to_date(v.raised_ts) AS obs_date, COUNT(*) AS stock_issues, SUM(CASE WHEN v.issue_type = 'OUT_OF_STOCK' THEN 1 ELSE 0 END) AS urgent_stock_issues FROM silver.stock_issue v JOIN silver.store d ON d.store_id = v.store_id AND d._is_current = true WHERE v._is_deleted = false GROUP BY d.state, to_date(v.raised_ts)) SELECT x.state, x.obs_date, x.promo_lines, x.avg_discount_pct, x.catalogue_reach_k, x.promo_type, COALESCE(ev.stock_issues, 0) AS stock_issues, COALESCE(ev.urgent_stock_issues, 0) AS urgent_stock_issues FROM silver.promotion_day x LEFT JOIN ev ON ev.state = x.state AND ev.obs_date = x.obs_date WHERE x._is_deleted = false",
+   "description": "Promotions against out-of-stocks by state",
+   "business_owner": "Merchandise",
+   "consumers": "Power BI / Direct Lake",
+   "active": true
+  }
+ }
+}

@@ -1,0 +1,269 @@
+{
+ "name": "pl_mdf_orchestrator_mlv",
+ "properties": {
+  "description": "MLV variant of the metadata-driven orchestrator: worklist -> parallel copy + Bronze per object -> refresh the materialized lake view lineage (Silver, quarantine, Gold in dependency order). Alternative: swap the last notebook for the native 'Refresh Materialized Lake View' activity. Replace every <...> placeholder before use.",
+  "activities": [
+   {
+    "name": "Get worklist",
+    "type": "TridentNotebook",
+    "dependsOn": [],
+    "policy": {
+     "timeout": "0.02:00:00",
+     "retry": 0,
+     "retryIntervalInSeconds": 60,
+     "secureOutput": false,
+     "secureInput": false
+    },
+    "typeProperties": {
+     "notebookId": "<NOTEBOOK_ID_NB_MDF_05_GET_WORKLIST>",
+     "workspaceId": "<WORKSPACE_ID>",
+     "parameters": {
+      "load_group": {
+       "value": {
+        "value": "@pipeline().parameters.load_group",
+        "type": "Expression"
+       },
+       "type": "string"
+      },
+      "object_ids": {
+       "value": {
+        "value": "@pipeline().parameters.object_ids",
+        "type": "Expression"
+       },
+       "type": "string"
+      },
+      "rerun_failed_only": {
+       "value": {
+        "value": "@pipeline().parameters.rerun_failed_only",
+        "type": "Expression"
+       },
+       "type": "bool"
+      },
+      "run_date": {
+       "value": {
+        "value": "@pipeline().parameters.run_date",
+        "type": "Expression"
+       },
+       "type": "string"
+      }
+     }
+    }
+   },
+   {
+    "name": "For each object - copy and ingest",
+    "type": "ForEach",
+    "dependsOn": [
+     {
+      "activity": "Get worklist",
+      "dependencyConditions": [
+       "Succeeded"
+      ]
+     }
+    ],
+    "typeProperties": {
+     "items": {
+      "value": "@json(activity('Get worklist').output.result.exitValue).items",
+      "type": "Expression"
+     },
+     "isSequential": false,
+     "batchCount": 4,
+     "activities": [
+      {
+       "name": "Is database source",
+       "type": "IfCondition",
+       "dependsOn": [],
+       "typeProperties": {
+        "expression": {
+         "value": "@equals(item().ingest_method, 'copy_db')",
+         "type": "Expression"
+        },
+        "ifTrueActivities": [
+         {
+          "name": "Copy source table to Landing",
+          "type": "Copy",
+          "dependsOn": [],
+          "policy": {
+           "timeout": "0.02:00:00",
+           "retry": 1,
+           "retryIntervalInSeconds": 60,
+           "secureOutput": false,
+           "secureInput": false
+          },
+          "typeProperties": {
+           "source": {
+            "type": "AzureSqlSource",
+            "sqlReaderQuery": {
+             "value": "@item().source_query",
+             "type": "Expression"
+            },
+            "queryTimeout": "02:00:00",
+            "partitionOption": "None",
+            "datasetSettings": {
+             "annotations": [],
+             "type": "AzureSqlTable",
+             "schema": [],
+             "typeProperties": {},
+             "externalReferences": {
+              "connection": "<SOURCE_SQL_CONNECTION_ID>"
+             }
+            }
+           },
+           "sink": {
+            "type": "DelimitedTextSink",
+            "storeSettings": {
+             "type": "LakehouseWriteSettings"
+            },
+            "formatSettings": {
+             "type": "DelimitedTextWriteSettings",
+             "quoteAllText": true,
+             "fileExtension": ".csv"
+            },
+            "datasetSettings": {
+             "annotations": [],
+             "type": "DelimitedText",
+             "typeProperties": {
+              "location": {
+               "type": "LakehouseLocation",
+               "folderPath": {
+                "value": "@item().landing_folder",
+                "type": "Expression"
+               },
+               "fileName": {
+                "value": "@item().landing_file",
+                "type": "Expression"
+               }
+              },
+              "columnDelimiter": ",",
+              "escapeChar": "\"",
+              "firstRowAsHeader": true,
+              "quoteChar": "\""
+             },
+             "schema": [],
+             "linkedService": {
+              "name": "lh_mdf",
+              "properties": {
+               "annotations": [],
+               "type": "Lakehouse",
+               "typeProperties": {
+                "workspaceId": "<WORKSPACE_ID>",
+                "artifactId": "<LAKEHOUSE_ID>",
+                "rootFolder": "Files"
+               }
+              }
+             }
+            }
+           },
+           "enableStaging": false,
+           "translator": {
+            "type": "TabularTranslator",
+            "typeConversion": true,
+            "typeConversionSettings": {
+             "allowDataTruncation": true,
+             "treatBooleanAsNumber": false
+            }
+           }
+          }
+         }
+        ],
+        "ifFalseActivities": []
+       }
+      },
+      {
+       "name": "Landing to Bronze",
+       "type": "TridentNotebook",
+       "dependsOn": [
+        {
+         "activity": "Is database source",
+         "dependencyConditions": [
+          "Succeeded"
+         ]
+        }
+       ],
+       "policy": {
+        "timeout": "0.02:00:00",
+        "retry": 1,
+        "retryIntervalInSeconds": 60,
+        "secureOutput": false,
+        "secureInput": false
+       },
+       "typeProperties": {
+        "notebookId": "<NOTEBOOK_ID_NB_MDF_10_LANDING_TO_BRONZE>",
+        "workspaceId": "<WORKSPACE_ID>",
+        "parameters": {
+         "object_ids": {
+          "value": {
+           "value": "@item().object_id",
+           "type": "Expression"
+          },
+          "type": "string"
+         },
+         "parent_run_id": {
+          "value": {
+           "value": "@pipeline().RunId",
+           "type": "Expression"
+          },
+          "type": "string"
+         }
+        }
+       }
+      }
+     ]
+    }
+   },
+   {
+    "name": "Refresh MLV lineage (Silver + Gold)",
+    "type": "TridentNotebook",
+    "dependsOn": [
+     {
+      "activity": "For each object - copy and ingest",
+      "dependencyConditions": [
+       "Completed"
+      ]
+     }
+    ],
+    "policy": {
+     "timeout": "0.02:00:00",
+     "retry": 1,
+     "retryIntervalInSeconds": 60,
+     "secureOutput": false,
+     "secureInput": false
+    },
+    "typeProperties": {
+     "notebookId": "<NOTEBOOK_ID_NB_MDF_55_MLV_REFRESH>",
+     "workspaceId": "<WORKSPACE_ID>",
+     "parameters": {
+      "parent_run_id": {
+       "value": {
+        "value": "@pipeline().RunId",
+        "type": "Expression"
+       },
+       "type": "string"
+      }
+     }
+    }
+   }
+  ],
+  "parameters": {
+   "load_group": {
+    "type": "string",
+    "defaultValue": "all"
+   },
+   "object_ids": {
+    "type": "string",
+    "defaultValue": ""
+   },
+   "rerun_failed_only": {
+    "type": "bool",
+    "defaultValue": false
+   },
+   "run_date": {
+    "type": "string",
+    "defaultValue": ""
+   }
+  },
+  "annotations": [
+   "mdf-demo",
+   "mlv"
+  ]
+ }
+}

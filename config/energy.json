@@ -1,0 +1,1307 @@
+{
+ "pack": {
+  "id": "energy",
+  "industry": "Energy & utilities",
+  "org": "Southern Grid Transmission",
+  "short": "SGT",
+  "prefix": "EN",
+  "tagline": "electricity transmission network operator in regional NSW",
+  "email_domain": "sgt.example.com.au",
+  "region_col": "region",
+  "region_label": "region",
+  "regions": [
+   "Riverina",
+   "Central West",
+   "New England",
+   "Hunter",
+   "Southern Tablelands",
+   "Far West",
+   "Sydney Metro"
+  ],
+  "name_words": [
+   "Wagga",
+   "Orange",
+   "Armidale",
+   "Muswellbrook",
+   "Goulburn",
+   "Broken Hill",
+   "Marulan",
+   "Dubbo",
+   "Tamworth",
+   "Yass",
+   "Lismore",
+   "Parkes"
+  ],
+  "sys": {
+   "ops": {
+    "code": "eam",
+    "name": "Enterprise Asset Management (on-prem SQL Server)",
+    "type": "Database",
+    "owner": "Asset systems",
+    "fabric": "Mirroring for SQL Server (near real-time, no ETL) vs Copy job incremental vs pipeline Copy"
+   },
+   "tel": {
+    "code": "scada",
+    "name": "SCADA historian exports (15-min CSV) and BoM weather feed",
+    "type": "OT file drop",
+    "owner": "Network Operations",
+    "fabric": "Eventstream if the historian can publish; otherwise file drop to OneLake + shortcut"
+   },
+   "crm": {
+    "code": "sfdc",
+    "name": "Salesforce (landholder engagement)",
+    "type": "SaaS CRM",
+    "owner": "Stakeholder Engagement",
+    "fabric": "Copy job with the Salesforce connector, or Dataverse/Salesforce mirroring where available"
+   }
+  },
+  "entity": {
+   "table": "asset",
+   "src": "assets",
+   "label": "asset",
+   "plural": "assets",
+   "id": "asset_id",
+   "code": "asset_tag",
+   "code_prefix": "AST",
+   "name_col": "asset_name",
+   "type_col": "asset_class",
+   "types": [
+    "SUBSTATION",
+    "TRANSFORMER",
+    "CIRCUIT_BREAKER",
+    "CAPACITOR_BANK",
+    "TRANSMISSION_LINE"
+   ],
+   "status": [
+    "IN_SERVICE",
+    "STANDBY",
+    "OUT_OF_SERVICE",
+    "DECOMMISSIONED"
+   ],
+   "tier_col": "criticality",
+   "tier_label": "criticality (1-5, 5 = most critical)",
+   "cap_col": "rating_mva",
+   "cap_label": "rating (MVA)",
+   "cap_range": [
+    10,
+    900
+   ],
+   "start_col": "install_date",
+   "start_years": [
+    1968,
+    2024
+   ],
+   "drift_col": "asset_owner_group",
+   "drift_values": [
+    "Northern Field Ops",
+    "Southern Field Ops",
+    "Major Projects"
+   ],
+   "owner": "Asset Management",
+   "count": 240
+  },
+  "event": {
+   "table": "work_order",
+   "src": "work_orders",
+   "label": "work order",
+   "plural": "work orders",
+   "id": "wo_id",
+   "id_start": 500001,
+   "type_col": "wo_type",
+   "types": [
+    "PM",
+    "CM",
+    "INSP",
+    "EMERG"
+   ],
+   "type_names": [
+    "Preventive maintenance",
+    "Corrective maintenance",
+    "Inspection",
+    "Emergency"
+   ],
+   "urgent_type": "EMERG",
+   "status": [
+    "OPEN",
+    "IN_PROGRESS",
+    "COMPLETE",
+    "CANCELLED"
+   ],
+   "open_ts": "raised_ts",
+   "close_ts": "completed_ts",
+   "open_verb": "raised",
+   "close_verb": "completed",
+   "amount_col": "cost_aud",
+   "amount_range": [
+    300,
+    85000
+   ],
+   "qty_col": "labour_hours",
+   "qty_range": [
+    1,
+    120
+   ],
+   "descriptions": [
+    "Thermal scan found hot joint",
+    "Oil sample analysis",
+    "Replace bushing",
+    "Protection relay test",
+    "Vegetation encroachment near span",
+    "Corona discharge inspection",
+    "Storm damage repair",
+    "Battery bank replacement"
+   ],
+   "owner": "Asset Management"
+  },
+  "reading": {
+   "table": "tx_telemetry",
+   "src": "transformer_telemetry",
+   "label": "transformer telemetry",
+   "fact": "tx_load",
+   "monitored": 24,
+   "monitored_types": [
+    "TRANSFORMER"
+   ],
+   "metrics": [
+    {
+     "col": "oil_temp_c",
+     "label": "oil temperature",
+     "unit": "°C",
+     "base": 62,
+     "sd": 6,
+     "min": -10,
+     "max": 140,
+     "threshold": 95
+    },
+    {
+     "col": "load_mw",
+     "label": "load",
+     "unit": "MW",
+     "base": 120,
+     "sd": 35,
+     "min": 0,
+     "max": 1000
+    },
+    {
+     "col": "ambient_temp_c",
+     "label": "ambient temperature",
+     "unit": "°C",
+     "base": 24,
+     "sd": 6,
+     "min": -10,
+     "max": 55
+    }
+   ],
+   "sentinel": 999.9,
+   "owner": "Network Operations"
+  },
+  "party": {
+   "table": "landholder",
+   "src": "landholder_contacts",
+   "label": "landholder",
+   "plural": "landholders",
+   "id": "landholder_id",
+   "id_prefix": "LH",
+   "sf_type": "Contact",
+   "segment_col": "landholder_type",
+   "segments": [
+    "Farm",
+    "Rural residential",
+    "Commercial",
+    "Crown land"
+   ],
+   "status": [
+    "Active",
+    "Inactive"
+   ],
+   "sensitive_col": "property_lot_dp",
+   "sensitive_label": "property lot/DP reference",
+   "sensitive_treatment": "hash",
+   "owner": "Stakeholder Engagement",
+   "count": 300
+  },
+  "extra": {
+   "table": "weather_daily",
+   "src": "weather_observations",
+   "label": "BoM weather observations",
+   "sys": "tel",
+   "cols": [
+    {
+     "col": "max_temp_c",
+     "base": 29,
+     "sd": 6,
+     "min": -10,
+     "max": 50
+    },
+    {
+     "col": "max_wind_gust_kmh",
+     "base": 45,
+     "sd": 20,
+     "min": 0,
+     "max": 200
+    },
+    {
+     "col": "rainfall_mm",
+     "base": 2,
+     "sd": 6,
+     "min": 0,
+     "max": 300
+    }
+   ],
+   "cat_col": "fire_danger_rating",
+   "cat_values": [
+    "Moderate",
+    "High",
+    "Extreme",
+    "Catastrophic"
+   ],
+   "owner": "Network Operations",
+   "story": "fire danger and wind gusts against emergency work orders by region"
+  },
+  "alert": {
+   "stream": "breaker_trip",
+   "label": "breaker trip",
+   "codes": [
+    "PROTECTION_TRIP",
+    "AUTO_RECLOSE",
+    "LOCKOUT"
+   ],
+   "storm": "storm cell"
+  },
+  "ref": {
+   "title": "Work order response targets",
+   "owner": "Asset Management",
+   "rows": [
+    [
+     "PM",
+     "Planned",
+     720,
+     "Maintenance Planning"
+    ],
+    [
+     "CM",
+     "Reactive",
+     168,
+     "Field Services"
+    ],
+    [
+     "INSP",
+     "Planned",
+     336,
+     "Asset Inspection"
+    ],
+    [
+     "EMERG",
+     "Emergency",
+     8,
+     "Network Operations"
+    ]
+   ]
+  },
+  "ai": {
+   "persona": "network operations and asset management",
+   "cust": "electricity transmission and distribution network operators",
+   "q_model": [
+    "Which region had the most unplanned work orders this financial year?",
+    "Show total work order cost by asset class and month.",
+    "Which critical assets (criticality 4 or 5) have open work orders?"
+   ],
+   "q_agent": [
+    "Which 10 transformers have the highest risk score, and how many open work orders does each have?",
+    "Compare average hours to complete emergency work orders by region.",
+    "Which transformers breached the 95 °C oil temperature threshold in the last 3 days?",
+    "What did we spend on corrective maintenance in the Hunter region?",
+    "List landholders by type in New England and how many are active."
+   ],
+   "q_onto": [
+    "Show me every asset in the Riverina that has an open emergency work order and a high risk band.",
+    "For the transformer with the highest oil temperature, what work orders have been raised against it and what did they cost?",
+    "Which landholders are linked to assets that are out of service?"
+   ]
+  },
+  "impact": {
+   "col": "outage_cost_at_risk_aud",
+   "label": "outage cost at risk",
+   "open_cost": 6000,
+   "breach_cost": 2500,
+   "cap_rate": 20,
+   "rule": "$6,000 per open work order + $2,500 per 15-min window above the oil-temperature threshold + rating (MVA) x criticality x $20"
+  }
+ },
+ "source_system": [
+  {
+   "source_system": "eam",
+   "industry": "energy",
+   "display_name": "Enterprise Asset Management (on-prem SQL Server)",
+   "system_type": "Database",
+   "connection_pattern": "On-premises data gateway -> pipeline Copy with watermark query",
+   "technical_owner": "Asset systems",
+   "fabric_options": "Mirroring for SQL Server (near real-time, no ETL) vs Copy job incremental vs pipeline Copy"
+  },
+  {
+   "source_system": "scada",
+   "industry": "energy",
+   "display_name": "SCADA historian exports (15-min CSV) and BoM weather feed",
+   "system_type": "OT file drop",
+   "connection_pattern": "Files dropped to OneLake (Files/landing) every 15 minutes",
+   "technical_owner": "Network Operations",
+   "fabric_options": "Eventstream if the historian can publish; otherwise file drop to OneLake + shortcut"
+  },
+  {
+   "source_system": "sfdc",
+   "industry": "energy",
+   "display_name": "Salesforce (landholder engagement)",
+   "system_type": "SaaS CRM",
+   "connection_pattern": "REST/OData API -> JSON landed per day",
+   "technical_owner": "Stakeholder Engagement",
+   "fabric_options": "Copy job with the Salesforce connector, or Dataverse/Salesforce mirroring where available"
+  }
+ ],
+ "ingestion_object": [
+  {
+   "object_id": "EN_EAM_ASSETS",
+   "industry": "energy",
+   "source_system": "eam",
+   "source_object": "assets",
+   "source_type": "database",
+   "ingest_method": "copy_db",
+   "landing_format": "csv",
+   "landing_path": "landing/eam/assets",
+   "read_options": "{\"header\": true, \"delimiter\": \",\"}",
+   "source_table": "src.assets",
+   "load_type": "incremental",
+   "watermark_column": "last_modified",
+   "primary_keys": "asset_id",
+   "dedupe_order_by": "last_modified DESC, _ingested_at DESC",
+   "bronze_table": "eam_assets",
+   "silver_table": "asset",
+   "silver_write_mode": "merge_scd2",
+   "load_group": "reference",
+   "priority": 10,
+   "sla_hours": 26,
+   "data_owner": "Asset Management",
+   "sensitivity": "Internal",
+   "active": true,
+   "description": "Asset register. SCD2 keeps status, criticality and rating_mva history.",
+   "fabric_alternative": "Strong mirroring candidate - small, slowly changing, needed in near real time by operations"
+  },
+  {
+   "object_id": "EN_EAM_WORK_ORDERS",
+   "industry": "energy",
+   "source_system": "eam",
+   "source_object": "work_orders",
+   "source_type": "database",
+   "ingest_method": "copy_db",
+   "landing_format": "csv",
+   "landing_path": "landing/eam/work_orders",
+   "read_options": "{\"header\": true, \"delimiter\": \",\"}",
+   "source_table": "src.work_orders",
+   "load_type": "incremental",
+   "watermark_column": "last_modified",
+   "primary_keys": "wo_id",
+   "dedupe_order_by": "last_modified DESC, _ingested_at DESC",
+   "bronze_table": "eam_work_orders",
+   "silver_table": "work_order",
+   "silver_write_mode": "merge_scd1",
+   "load_group": "transactional",
+   "priority": 20,
+   "sla_hours": 26,
+   "data_owner": "Asset Management",
+   "sensitivity": "Internal",
+   "active": true,
+   "description": "Work orders - incremental by last_modified; can arrive before their asset (late-arriving).",
+   "fabric_alternative": "Copy job incremental or mirroring; keep the watermark query if the source is on-prem"
+  },
+  {
+   "object_id": "EN_SCADA_TRANSFORMER_TELEMETRY",
+   "industry": "energy",
+   "source_system": "scada",
+   "source_object": "transformer_telemetry",
+   "source_type": "file",
+   "ingest_method": "landed_file",
+   "landing_format": "csv",
+   "landing_path": "landing/scada/transformer_telemetry",
+   "read_options": "{\"header\": true, \"delimiter\": \",\"}",
+   "source_table": null,
+   "load_type": "incremental",
+   "watermark_column": null,
+   "primary_keys": "asset_id,reading_ts",
+   "dedupe_order_by": "_ingested_at DESC",
+   "bronze_table": "scada_transformer_telemetry",
+   "silver_table": "tx_telemetry",
+   "silver_write_mode": "insert_only",
+   "load_group": "telemetry",
+   "priority": 30,
+   "sla_hours": 2,
+   "data_owner": "Network Operations",
+   "sensitivity": "Internal",
+   "active": true,
+   "description": "Transformer telemetry every 15 minutes, four micro-batch files a day. Insert-only and idempotent.",
+   "fabric_alternative": "Eventstream into Eventhouse for real time; keep this batch path for history and reconciliation"
+  },
+  {
+   "object_id": "EN_SFDC_LANDHOLDER_CONTACTS",
+   "industry": "energy",
+   "source_system": "sfdc",
+   "source_object": "landholder_contacts",
+   "source_type": "api",
+   "ingest_method": "landed_file",
+   "landing_format": "json",
+   "landing_path": "landing/sfdc/landholder_contacts",
+   "read_options": "{\"multiline\": true, \"json_root\": \"records\"}",
+   "source_table": null,
+   "load_type": "full",
+   "watermark_column": null,
+   "primary_keys": "landholder_id",
+   "dedupe_order_by": "last_modified_ts DESC, _ingested_at DESC",
+   "bronze_table": "sfdc_landholder_contacts",
+   "silver_table": "landholder",
+   "silver_write_mode": "merge_scd1",
+   "load_group": "reference",
+   "priority": 15,
+   "sla_hours": 26,
+   "data_owner": "Stakeholder Engagement",
+   "sensitivity": "Confidential",
+   "active": true,
+   "description": "Landholders - full daily snapshot from the CRM API (contains PII). Missing rows are soft-deleted.",
+   "fabric_alternative": "Copy job with the CRM connector; Dataverse-based CRMs can use Link to Fabric instead of copying"
+  }
+ ],
+ "column_map": [
+  {
+   "object_id": "EN_EAM_ASSETS",
+   "column_order": 0,
+   "source_column": "asset_id",
+   "target_column": "asset_id",
+   "data_type": "int",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "EN_EAM_ASSETS",
+   "column_order": 1,
+   "source_column": "asset_tag",
+   "target_column": "asset_tag",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "EN_EAM_ASSETS",
+   "column_order": 2,
+   "source_column": "asset_name",
+   "target_column": "asset_name",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "EN_EAM_ASSETS",
+   "column_order": 3,
+   "source_column": "asset_class",
+   "target_column": "asset_class",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "EN_EAM_ASSETS",
+   "column_order": 4,
+   "source_column": "region",
+   "target_column": "region",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "EN_EAM_ASSETS",
+   "column_order": 5,
+   "source_column": "status",
+   "target_column": "status",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "EN_EAM_ASSETS",
+   "column_order": 6,
+   "source_column": "criticality",
+   "target_column": "criticality",
+   "data_type": "int",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "EN_EAM_ASSETS",
+   "column_order": 7,
+   "source_column": "rating_mva",
+   "target_column": "rating_mva",
+   "data_type": "double",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "EN_EAM_ASSETS",
+   "column_order": 8,
+   "source_column": "install_date",
+   "target_column": "install_date",
+   "data_type": "date",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "EN_EAM_ASSETS",
+   "column_order": 9,
+   "source_column": "last_modified",
+   "target_column": "last_modified",
+   "data_type": "timestamp",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "EN_EAM_WORK_ORDERS",
+   "column_order": 0,
+   "source_column": "wo_id",
+   "target_column": "wo_id",
+   "data_type": "int",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "EN_EAM_WORK_ORDERS",
+   "column_order": 1,
+   "source_column": "asset_id",
+   "target_column": "asset_id",
+   "data_type": "int",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "EN_EAM_WORK_ORDERS",
+   "column_order": 2,
+   "source_column": "wo_type",
+   "target_column": "wo_type",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "EN_EAM_WORK_ORDERS",
+   "column_order": 3,
+   "source_column": "priority",
+   "target_column": "priority",
+   "data_type": "int",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "EN_EAM_WORK_ORDERS",
+   "column_order": 4,
+   "source_column": "status",
+   "target_column": "status",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "EN_EAM_WORK_ORDERS",
+   "column_order": 5,
+   "source_column": "raised_ts",
+   "target_column": "raised_ts",
+   "data_type": "timestamp",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "EN_EAM_WORK_ORDERS",
+   "column_order": 6,
+   "source_column": "completed_ts",
+   "target_column": "completed_ts",
+   "data_type": "timestamp",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "EN_EAM_WORK_ORDERS",
+   "column_order": 7,
+   "source_column": "cost_aud",
+   "target_column": "cost_aud",
+   "data_type": "decimal(12,2)",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "EN_EAM_WORK_ORDERS",
+   "column_order": 8,
+   "source_column": "labour_hours",
+   "target_column": "labour_hours",
+   "data_type": "double",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "EN_EAM_WORK_ORDERS",
+   "column_order": 9,
+   "source_column": "description",
+   "target_column": "description",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "EN_EAM_WORK_ORDERS",
+   "column_order": 10,
+   "source_column": "last_modified",
+   "target_column": "last_modified",
+   "data_type": "timestamp",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "EN_SCADA_TRANSFORMER_TELEMETRY",
+   "column_order": 0,
+   "source_column": "asset_id",
+   "target_column": "asset_id",
+   "data_type": "int",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "EN_SCADA_TRANSFORMER_TELEMETRY",
+   "column_order": 1,
+   "source_column": "reading_time",
+   "target_column": "reading_ts",
+   "data_type": "timestamp",
+   "transform_expr": "to_timestamp(reading_time, 'dd/MM/yyyy HH:mm')",
+   "pii_treatment": "none",
+   "sensitivity": "none",
+   "description": ""
+  },
+  {
+   "object_id": "EN_SCADA_TRANSFORMER_TELEMETRY",
+   "column_order": 2,
+   "source_column": "oil_temp_c",
+   "target_column": "oil_temp_c",
+   "data_type": "double",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "EN_SCADA_TRANSFORMER_TELEMETRY",
+   "column_order": 3,
+   "source_column": "load_mw",
+   "target_column": "load_mw",
+   "data_type": "double",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "EN_SCADA_TRANSFORMER_TELEMETRY",
+   "column_order": 4,
+   "source_column": "ambient_temp_c",
+   "target_column": "ambient_temp_c",
+   "data_type": "double",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "EN_SFDC_LANDHOLDER_CONTACTS",
+   "column_order": 0,
+   "source_column": "Id",
+   "target_column": "landholder_id",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "EN_SFDC_LANDHOLDER_CONTACTS",
+   "column_order": 1,
+   "source_column": "FirstName",
+   "target_column": "first_name",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "drop",
+   "sensitivity": "Confidential",
+   "description": ""
+  },
+  {
+   "object_id": "EN_SFDC_LANDHOLDER_CONTACTS",
+   "column_order": 2,
+   "source_column": "LastName",
+   "target_column": "last_name",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "drop",
+   "sensitivity": "Confidential",
+   "description": ""
+  },
+  {
+   "object_id": "EN_SFDC_LANDHOLDER_CONTACTS",
+   "column_order": 3,
+   "source_column": "Email",
+   "target_column": "email_masked",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "mask_email",
+   "sensitivity": "Confidential",
+   "description": ""
+  },
+  {
+   "object_id": "EN_SFDC_LANDHOLDER_CONTACTS",
+   "column_order": 4,
+   "source_column": "MobilePhone",
+   "target_column": "mobile_masked",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "mask_phone",
+   "sensitivity": "Confidential",
+   "description": ""
+  },
+  {
+   "object_id": "EN_SFDC_LANDHOLDER_CONTACTS",
+   "column_order": 5,
+   "source_column": "Birthdate",
+   "target_column": "birth_year",
+   "data_type": "int",
+   "transform_expr": null,
+   "pii_treatment": "year_only",
+   "sensitivity": "Confidential",
+   "description": ""
+  },
+  {
+   "object_id": "EN_SFDC_LANDHOLDER_CONTACTS",
+   "column_order": 6,
+   "source_column": "MailingPostalCode",
+   "target_column": "postcode",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "EN_SFDC_LANDHOLDER_CONTACTS",
+   "column_order": 7,
+   "source_column": "Region__c",
+   "target_column": "region",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "EN_SFDC_LANDHOLDER_CONTACTS",
+   "column_order": 8,
+   "source_column": "LandholderType__c",
+   "target_column": "landholder_type",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "EN_SFDC_LANDHOLDER_CONTACTS",
+   "column_order": 9,
+   "source_column": "AssetId__c",
+   "target_column": "asset_id",
+   "data_type": "int",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "EN_SFDC_LANDHOLDER_CONTACTS",
+   "column_order": 10,
+   "source_column": "Status__c",
+   "target_column": "status",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "EN_SFDC_LANDHOLDER_CONTACTS",
+   "column_order": 11,
+   "source_column": "PropertyLotDp__c",
+   "target_column": "property_lot_dp_hash",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "hash",
+   "sensitivity": "Restricted",
+   "description": ""
+  },
+  {
+   "object_id": "EN_SFDC_LANDHOLDER_CONTACTS",
+   "column_order": 12,
+   "source_column": "LastModifiedDate",
+   "target_column": "last_modified_ts",
+   "data_type": "timestamp",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  }
+ ],
+ "dq_rule": [
+  {
+   "rule_id": "EN-ENT-01",
+   "object_id": "EN_EAM_ASSETS",
+   "rule_name": "Asset id present",
+   "rule_category": "technical",
+   "check_type": "not_null",
+   "column_name": "asset_id",
+   "params": "{}",
+   "severity": "fail",
+   "fail_threshold_pct": 0,
+   "rule_owner": "Data engineering",
+   "description": "Primary key must never be null",
+   "active": true
+  },
+  {
+   "rule_id": "EN-ENT-02",
+   "object_id": "EN_EAM_ASSETS",
+   "rule_name": "Known asset_class",
+   "rule_category": "technical",
+   "check_type": "allowed_values",
+   "column_name": "asset_class",
+   "params": "{\"values\": [\"SUBSTATION\", \"TRANSFORMER\", \"CIRCUIT_BREAKER\", \"CAPACITOR_BANK\", \"TRANSMISSION_LINE\"]}",
+   "severity": "warn",
+   "fail_threshold_pct": null,
+   "rule_owner": "Data engineering",
+   "description": "Unknown classes are kept but flagged for the data owner",
+   "active": true
+  },
+  {
+   "rule_id": "EN-ENT-03",
+   "object_id": "EN_EAM_ASSETS",
+   "rule_name": "criticality between 1 and 5",
+   "rule_category": "technical",
+   "check_type": "range",
+   "column_name": "criticality",
+   "params": "{\"min\": 1, \"max\": 5}",
+   "severity": "warn",
+   "fail_threshold_pct": null,
+   "rule_owner": "Data engineering",
+   "description": "Out-of-range ratings usually mean a keying error in the source",
+   "active": true
+  },
+  {
+   "rule_id": "EN-ENT-04",
+   "object_id": "EN_EAM_ASSETS",
+   "rule_name": "Known status",
+   "rule_category": "business",
+   "check_type": "allowed_values",
+   "column_name": "status",
+   "params": "{\"values\": [\"IN_SERVICE\", \"STANDBY\", \"OUT_OF_SERVICE\", \"DECOMMISSIONED\"]}",
+   "severity": "warn",
+   "fail_threshold_pct": null,
+   "rule_owner": "Asset Management",
+   "description": "Status list agreed with Asset Management",
+   "active": true
+  },
+  {
+   "rule_id": "EN-EVT-01",
+   "object_id": "EN_EAM_WORK_ORDERS",
+   "rule_name": "Work order id present",
+   "rule_category": "technical",
+   "check_type": "not_null",
+   "column_name": "wo_id",
+   "params": "{}",
+   "severity": "fail",
+   "fail_threshold_pct": 0,
+   "rule_owner": "Data engineering",
+   "description": "Primary key must never be null",
+   "active": true
+  },
+  {
+   "rule_id": "EN-EVT-02",
+   "object_id": "EN_EAM_WORK_ORDERS",
+   "rule_name": "Asset exists",
+   "rule_category": "technical",
+   "check_type": "referential",
+   "column_name": "asset_id",
+   "params": "{\"ref_table\": \"silver.asset\", \"ref_column\": \"asset_id\"}",
+   "severity": "quarantine",
+   "fail_threshold_pct": null,
+   "rule_owner": "Data engineering",
+   "description": "Held until the asset arrives (late-arriving reference data), then merged automatically",
+   "active": true
+  },
+  {
+   "rule_id": "EN-EVT-03",
+   "object_id": "EN_EAM_WORK_ORDERS",
+   "rule_name": "Completed after raised",
+   "rule_category": "business",
+   "check_type": "expression",
+   "column_name": null,
+   "params": "{\"expr\": \"completed_ts IS NULL OR completed_ts >= raised_ts\"}",
+   "severity": "quarantine",
+   "fail_threshold_pct": null,
+   "rule_owner": "Asset Management",
+   "description": "A work order can't be completed before it was raised",
+   "active": true
+  },
+  {
+   "rule_id": "EN-EVT-04",
+   "object_id": "EN_EAM_WORK_ORDERS",
+   "rule_name": "cost_aud not negative",
+   "rule_category": "technical",
+   "check_type": "range",
+   "column_name": "cost_aud",
+   "params": "{\"min\": 0}",
+   "severity": "warn",
+   "fail_threshold_pct": null,
+   "rule_owner": "Data engineering",
+   "description": "Negative values are sign errors in the source extract",
+   "active": true
+  },
+  {
+   "rule_id": "EN-EVT-05",
+   "object_id": "EN_EAM_WORK_ORDERS",
+   "rule_name": "EMERG is priority 1",
+   "rule_category": "business",
+   "check_type": "expression",
+   "column_name": null,
+   "params": "{\"expr\": \"wo_type <> 'EMERG' OR priority = 1\"}",
+   "severity": "warn",
+   "fail_threshold_pct": null,
+   "rule_owner": "Asset Management",
+   "description": "Emergency work orders must be raised as priority 1",
+   "active": true
+  },
+  {
+   "rule_id": "EN-EVT-06",
+   "object_id": "EN_EAM_WORK_ORDERS",
+   "rule_name": "raised_ts parses",
+   "rule_category": "technical",
+   "check_type": "not_null",
+   "column_name": "raised_ts",
+   "params": "{}",
+   "severity": "fail",
+   "fail_threshold_pct": 5,
+   "rule_owner": "Data engineering",
+   "description": "If more than 5% of timestamps fail to parse, the extract format has changed - stop the load",
+   "active": true
+  },
+  {
+   "rule_id": "EN-RDG-01",
+   "object_id": "EN_SCADA_TRANSFORMER_TELEMETRY",
+   "rule_name": "Oil temperature plausible",
+   "rule_category": "technical",
+   "check_type": "range",
+   "column_name": "oil_temp_c",
+   "params": "{\"min\": -10, \"max\": 140}",
+   "severity": "quarantine",
+   "fail_threshold_pct": null,
+   "rule_owner": "Data engineering",
+   "description": "Sensor fault values (e.g. 999.9) are quarantined, never averaged into Gold",
+   "active": true
+  },
+  {
+   "rule_id": "EN-RDG-02",
+   "object_id": "EN_SCADA_TRANSFORMER_TELEMETRY",
+   "rule_name": "Asset known",
+   "rule_category": "technical",
+   "check_type": "referential",
+   "column_name": "asset_id",
+   "params": "{\"ref_table\": \"silver.asset\", \"ref_column\": \"asset_id\"}",
+   "severity": "warn",
+   "fail_threshold_pct": null,
+   "rule_owner": "Data engineering",
+   "description": "Readings for unknown tags are flagged",
+   "active": true
+  },
+  {
+   "rule_id": "EN-RDG-03",
+   "object_id": "EN_SCADA_TRANSFORMER_TELEMETRY",
+   "rule_name": "Reading time parses",
+   "rule_category": "technical",
+   "check_type": "not_null",
+   "column_name": "reading_ts",
+   "params": "{}",
+   "severity": "fail",
+   "fail_threshold_pct": 5,
+   "rule_owner": "Data engineering",
+   "description": "Timestamp format change stops the load",
+   "active": true
+  },
+  {
+   "rule_id": "EN-PTY-01",
+   "object_id": "EN_SFDC_LANDHOLDER_CONTACTS",
+   "rule_name": "Landholder id present",
+   "rule_category": "technical",
+   "check_type": "not_null",
+   "column_name": "landholder_id",
+   "params": "{}",
+   "severity": "fail",
+   "fail_threshold_pct": 0,
+   "rule_owner": "Data engineering",
+   "description": "Primary key must never be null",
+   "active": true
+  },
+  {
+   "rule_id": "EN-PTY-02",
+   "object_id": "EN_SFDC_LANDHOLDER_CONTACTS",
+   "rule_name": "Email looks valid",
+   "rule_category": "technical",
+   "check_type": "regex",
+   "column_name": "email_masked",
+   "params": "{\"pattern\": \"^[^@\\\\s]+@[^@\\\\s]+\\\\.[^@\\\\s]+$\"}",
+   "severity": "warn",
+   "fail_threshold_pct": null,
+   "rule_owner": "Data engineering",
+   "description": "Checked on the raw value before masking",
+   "active": true
+  },
+  {
+   "rule_id": "EN-PTY-03",
+   "object_id": "EN_SFDC_LANDHOLDER_CONTACTS",
+   "rule_name": "Australian postcode",
+   "rule_category": "technical",
+   "check_type": "regex",
+   "column_name": "postcode",
+   "params": "{\"pattern\": \"^\\\\d{4}$\"}",
+   "severity": "warn",
+   "fail_threshold_pct": null,
+   "rule_owner": "Data engineering",
+   "description": "Four digits",
+   "active": true
+  },
+  {
+   "rule_id": "EN-PTY-04",
+   "object_id": "EN_SFDC_LANDHOLDER_CONTACTS",
+   "rule_name": "Known landholder_type",
+   "rule_category": "business",
+   "check_type": "allowed_values",
+   "column_name": "landholder_type",
+   "params": "{\"values\": [\"Farm\", \"Rural residential\", \"Commercial\", \"Crown land\"]}",
+   "severity": "warn",
+   "fail_threshold_pct": null,
+   "rule_owner": "Stakeholder Engagement",
+   "description": "Segments agreed with Stakeholder Engagement",
+   "active": true
+  }
+ ],
+ "gold_transform": [
+  {
+   "transform_id": "EN-G01",
+   "industry": "energy",
+   "gold_table": "dim_date",
+   "run_order": 100,
+   "sql_text": "SELECT CAST(date_format(d, 'yyyyMMdd') AS INT) AS date_key, d AS calendar_date, year(d) AS calendar_year, quarter(d) AS calendar_quarter, month(d) AS month_number, date_format(d, 'MMM') AS month_name, date_format(d, 'yyyy-MM') AS year_month, dayofmonth(d) AS day_of_month, date_format(d, 'EEE') AS day_name, CASE WHEN month(d) >= 7 THEN year(d) + 1 ELSE year(d) END AS fy_year, concat('FY', substring(CAST(CASE WHEN month(d) >= 7 THEN year(d) + 1 ELSE year(d) END AS STRING), 3, 2)) AS fy_label, CASE WHEN dayofweek(d) IN (1, 7) THEN true ELSE false END AS is_weekend FROM (SELECT explode(sequence(to_date('2020-01-01'), to_date('2028-12-31'), interval 1 day)) AS d) dates",
+   "description": "Calendar with Australian financial year",
+   "business_owner": "Data engineering",
+   "consumers": "Power BI / Direct Lake, data agent",
+   "active": true
+  },
+  {
+   "transform_id": "EN-G02",
+   "industry": "energy",
+   "gold_table": "dim_asset",
+   "run_order": 110,
+   "sql_text": "SELECT asset_id, asset_tag, asset_name, asset_class, region, status, criticality, rating_mva, install_date, CAST(floor(months_between(current_date(), install_date) / 12) AS INT) AS age_years, _valid_from AS version_valid_from FROM silver.asset WHERE _is_current = true",
+   "description": "Current view of the asset register (history stays in Silver SCD2)",
+   "business_owner": "Asset Management",
+   "consumers": "Power BI / Direct Lake, data agent",
+   "active": true
+  },
+  {
+   "transform_id": "EN-G03",
+   "industry": "energy",
+   "gold_table": "fact_work_order",
+   "run_order": 120,
+   "sql_text": "SELECT v.wo_id, v.asset_id, v.wo_type, v.priority, v.status, v.raised_ts, v.completed_ts, to_date(v.raised_ts) AS opened_date, CAST(date_format(v.raised_ts, 'yyyyMMdd') AS INT) AS opened_date_key, ROUND((unix_timestamp(v.completed_ts) - unix_timestamp(v.raised_ts)) / 3600.0, 2) AS hours_to_close, CASE WHEN v.status IN ('OPEN', 'IN_PROGRESS') THEN 1 ELSE 0 END AS is_open, v.cost_aud, v.labour_hours, d.region, d.asset_class, d.criticality FROM silver.work_order v LEFT JOIN silver.asset d ON d.asset_id = v.asset_id AND d._is_current = true WHERE v._is_deleted = false",
+   "description": "Work orders with duration and asset attributes",
+   "business_owner": "Asset Management",
+   "consumers": "Power BI / Direct Lake, data agent",
+   "active": true
+  },
+  {
+   "transform_id": "EN-G04",
+   "industry": "energy",
+   "gold_table": "fact_tx_load_hourly",
+   "run_order": 130,
+   "sql_text": "SELECT asset_id, date_trunc('HOUR', reading_ts) AS reading_hour, to_date(reading_ts) AS reading_date, CAST(date_format(reading_ts, 'yyyyMMdd') AS INT) AS reading_date_key, COUNT(*) AS readings, ROUND(AVG(oil_temp_c), 2) AS avg_oil_temp_c, ROUND(MAX(oil_temp_c), 2) AS max_oil_temp_c, ROUND(AVG(load_mw), 2) AS avg_load_mw, ROUND(AVG(ambient_temp_c), 2) AS avg_ambient_temp_c, SUM(CASE WHEN oil_temp_c > 95 THEN 1 ELSE 0 END) AS breach_readings FROM silver.tx_telemetry GROUP BY asset_id, date_trunc('HOUR', reading_ts), to_date(reading_ts), CAST(date_format(reading_ts, 'yyyyMMdd') AS INT)",
+   "description": "Hourly transformer telemetry with threshold breaches",
+   "business_owner": "Network Operations",
+   "consumers": "Power BI / Direct Lake, data agent",
+   "active": true
+  },
+  {
+   "transform_id": "EN-G05",
+   "industry": "energy",
+   "gold_table": "asset_health_scorecard",
+   "run_order": 200,
+   "sql_text": "WITH asat AS (SELECT MAX(to_date(raised_ts)) AS as_at FROM silver.work_order), ev AS (SELECT v.asset_id, COUNT(*) AS work_orders_12m, SUM(CASE WHEN v.status IN ('OPEN', 'IN_PROGRESS') THEN 1 ELSE 0 END) AS open_work_orders, SUM(CASE WHEN v.wo_type = 'EMERG' THEN 1 ELSE 0 END) AS urgent_work_orders_12m, ROUND(SUM(v.cost_aud), 2) AS cost_aud_12m FROM silver.work_order v CROSS JOIN asat WHERE v._is_deleted = false AND to_date(v.raised_ts) > add_months(asat.as_at, -12) GROUP BY v.asset_id), rd AS (SELECT asset_id, MAX(oil_temp_c) AS max_oil_temp_c, SUM(CASE WHEN oil_temp_c > 95 THEN 1 ELSE 0 END) AS breach_readings FROM silver.tx_telemetry GROUP BY asset_id), s AS (SELECT d.asset_id, d.asset_tag, d.asset_name, d.asset_class, d.region, d.status, d.criticality, COALESCE(ev.work_orders_12m, 0) AS work_orders_12m, COALESCE(ev.open_work_orders, 0) AS open_work_orders, COALESCE(ev.urgent_work_orders_12m, 0) AS urgent_work_orders_12m, COALESCE(ev.cost_aud_12m, 0) AS cost_aud_12m, rd.max_oil_temp_c, COALESCE(rd.breach_readings, 0) AS breach_readings, d.rating_mva FROM silver.asset d LEFT JOIN ev ON ev.asset_id = d.asset_id LEFT JOIN rd ON rd.asset_id = d.asset_id WHERE d._is_current = true) SELECT s.*, ROUND(LEAST(100, COALESCE(s.criticality, 1) * 8 + s.open_work_orders * 6 + s.urgent_work_orders_12m * 4 + LEAST(s.breach_readings, 20) * 1.5), 1) AS risk_score, CASE WHEN LEAST(100, COALESCE(s.criticality, 1) * 8 + s.open_work_orders * 6 + s.urgent_work_orders_12m * 4 + LEAST(s.breach_readings, 20) * 1.5) >= 60 THEN 'High' WHEN LEAST(100, COALESCE(s.criticality, 1) * 8 + s.open_work_orders * 6 + s.urgent_work_orders_12m * 4 + LEAST(s.breach_readings, 20) * 1.5) >= 35 THEN 'Medium' ELSE 'Low' END AS risk_band, ROUND(s.open_work_orders * 6000 + LEAST(s.breach_readings, 20) * 2500 + COALESCE(s.rating_mva, 0) * COALESCE(s.criticality, 1) * 20, 0) AS outage_cost_at_risk_aud FROM s",
+   "description": "Asset risk score - work orders, urgent work and oil temperature breaches, plus outage cost at risk in AUD (weights and dollar rates are illustrative: $6,000 per open work order + $2,500 per 15-min window above the oil-temperature threshold + rating (MVA) x criticality x $20)",
+   "business_owner": "Asset Management",
+   "consumers": "Power BI / Direct Lake, data agent",
+   "active": true
+  },
+  {
+   "transform_id": "EN-G06",
+   "industry": "energy",
+   "gold_table": "landholder_summary",
+   "run_order": 210,
+   "sql_text": "SELECT region, landholder_type, COUNT(*) AS landholders, SUM(CASE WHEN status = 'Active' THEN 1 ELSE 0 END) AS active_landholders, ROUND(AVG(year(current_date()) - birth_year), 1) AS avg_age, COUNT(DISTINCT asset_id) AS linked_assets FROM silver.landholder WHERE _is_deleted = false GROUP BY region, landholder_type",
+   "description": "Landholders by region and landholder_type",
+   "business_owner": "Stakeholder Engagement",
+   "consumers": "Power BI / Direct Lake, data agent",
+   "active": true
+  }
+ ],
+ "onboard": {
+  "object": {
+   "object_id": "EN_SCADA_WEATHER_OBSERVATIONS",
+   "industry": "energy",
+   "source_system": "scada",
+   "source_object": "weather_observations",
+   "source_type": "file",
+   "ingest_method": "landed_file",
+   "landing_format": "txt",
+   "landing_path": "landing/scada/weather_observations",
+   "read_options": "{\"header\": true, \"delimiter\": \"|\"}",
+   "source_table": null,
+   "load_type": "incremental",
+   "watermark_column": null,
+   "primary_keys": "region,obs_date",
+   "dedupe_order_by": "_ingested_at DESC",
+   "bronze_table": "scada_weather_observations",
+   "silver_table": "weather_daily",
+   "silver_write_mode": "merge_scd1",
+   "load_group": "reference",
+   "priority": 25,
+   "sla_hours": 26,
+   "data_owner": "Network Operations",
+   "sensitivity": "Public",
+   "active": true,
+   "description": "Daily BoM weather observations by region (pipe-delimited, dd/MM/yyyy) - onboarded live in the demo",
+   "fabric_alternative": "Public or partner feed - could be a REST copy, or a shortcut if the provider shares a folder"
+  },
+  "columns": [
+   [
+    "region",
+    "region",
+    "string",
+    null
+   ],
+   [
+    "obs_date",
+    "obs_date",
+    "date",
+    "to_date(obs_date, 'dd/MM/yyyy')"
+   ],
+   [
+    "max_temp_c",
+    "max_temp_c",
+    "double",
+    null
+   ],
+   [
+    "max_wind_gust_kmh",
+    "max_wind_gust_kmh",
+    "double",
+    null
+   ],
+   [
+    "rainfall_mm",
+    "rainfall_mm",
+    "double",
+    null
+   ],
+   [
+    "fire_danger_rating",
+    "fire_danger_rating",
+    "string",
+    null
+   ]
+  ],
+  "rules": [
+   [
+    "EN-EXT-01",
+    "max_temp_c plausible",
+    "technical",
+    "range",
+    "max_temp_c",
+    "{\"min\": -10, \"max\": 50}",
+    "warn"
+   ],
+   [
+    "EN-EXT-02",
+    "Known fire_danger_rating",
+    "business",
+    "allowed_values",
+    "fire_danger_rating",
+    "{\"values\": [\"Moderate\", \"High\", \"Extreme\", \"Catastrophic\"]}",
+    "warn"
+   ]
+  ],
+  "gold": {
+   "transform_id": "EN-G07",
+   "industry": "energy",
+   "gold_table": "work_order_vs_weather_daily",
+   "run_order": 220,
+   "sql_text": "WITH ev AS (SELECT d.region, to_date(v.raised_ts) AS obs_date, COUNT(*) AS work_orders, SUM(CASE WHEN v.wo_type = 'EMERG' THEN 1 ELSE 0 END) AS urgent_work_orders FROM silver.work_order v JOIN silver.asset d ON d.asset_id = v.asset_id AND d._is_current = true WHERE v._is_deleted = false GROUP BY d.region, to_date(v.raised_ts)) SELECT x.region, x.obs_date, x.max_temp_c, x.max_wind_gust_kmh, x.rainfall_mm, x.fire_danger_rating, COALESCE(ev.work_orders, 0) AS work_orders, COALESCE(ev.urgent_work_orders, 0) AS urgent_work_orders FROM silver.weather_daily x LEFT JOIN ev ON ev.region = x.region AND ev.obs_date = x.obs_date WHERE x._is_deleted = false",
+   "description": "Fire danger and wind gusts against emergency work orders by region",
+   "business_owner": "Network Operations",
+   "consumers": "Power BI / Direct Lake",
+   "active": true
+  }
+ }
+}

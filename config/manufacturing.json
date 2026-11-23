@@ -1,0 +1,1306 @@
+{
+ "pack": {
+  "id": "manufacturing",
+  "industry": "Manufacturing",
+  "org": "Kestrel Components",
+  "short": "KCO",
+  "prefix": "MF",
+  "tagline": "automotive and agricultural components manufacturer",
+  "email_domain": "kestrel.example.com.au",
+  "region_col": "plant",
+  "region_label": "plant",
+  "regions": [
+   "Geelong",
+   "Dandenong",
+   "Wodonga",
+   "Ballarat",
+   "Bendigo",
+   "Albury"
+  ],
+  "name_words": [
+   "Line A",
+   "Line B",
+   "Line C",
+   "Cell 1",
+   "Cell 2",
+   "Cell 3",
+   "Bay 4",
+   "Bay 5",
+   "Press Shop",
+   "Paint Shop"
+  ],
+  "sys": {
+   "ops": {
+    "code": "mes",
+    "name": "Manufacturing Execution System (on-prem SQL Server)",
+    "type": "Database",
+    "owner": "Plant IT",
+    "fabric": "Mirroring for SQL Server vs Copy job incremental vs pipeline Copy through the gateway"
+   },
+   "tel": {
+    "code": "iot",
+    "name": "Machine IoT historian (15-min CSV) and energy price feed",
+    "type": "OT file drop",
+    "owner": "Manufacturing Engineering",
+    "fabric": "Eventstream from IoT Hub / MQTT for real time; files to OneLake for batch"
+   },
+   "crm": {
+    "code": "d365",
+    "name": "Dynamics 365 Sales (distributor contacts)",
+    "type": "SaaS CRM",
+    "owner": "Sales Operations",
+    "fabric": "Link to Microsoft Fabric (Dataverse) or Copy job"
+   }
+  },
+  "entity": {
+   "table": "machine",
+   "src": "machines",
+   "label": "machine",
+   "plural": "machines",
+   "id": "machine_id",
+   "code": "machine_code",
+   "code_prefix": "MC",
+   "name_col": "machine_name",
+   "type_col": "machine_type",
+   "types": [
+    "CNC_MILL",
+    "INJECTION_MOULDER",
+    "STAMPING_PRESS",
+    "ROBOT_CELL",
+    "CONVEYOR"
+   ],
+   "status": [
+    "RUNNING",
+    "IDLE",
+    "MAINTENANCE",
+    "RETIRED"
+   ],
+   "tier_col": "criticality",
+   "tier_label": "criticality (1-5, 5 = bottleneck machine)",
+   "cap_col": "rated_units_per_hour",
+   "cap_label": "rated output (units/hour)",
+   "cap_range": [
+    20,
+    1200
+   ],
+   "start_col": "commissioned_date",
+   "start_years": [
+    1998,
+    2025
+   ],
+   "drift_col": "line_supervisor",
+   "drift_values": [
+    "Day shift",
+    "Afternoon shift",
+    "Night shift"
+   ],
+   "owner": "Manufacturing Engineering",
+   "count": 240
+  },
+  "event": {
+   "table": "maintenance_order",
+   "src": "maintenance_orders",
+   "label": "maintenance order",
+   "plural": "maintenance orders",
+   "id": "mo_id",
+   "id_start": 300001,
+   "type_col": "mo_type",
+   "types": [
+    "BREAKDOWN",
+    "PREVENTIVE",
+    "CALIBRATION",
+    "CHANGEOVER"
+   ],
+   "type_names": [
+    "Breakdown",
+    "Preventive",
+    "Calibration",
+    "Changeover"
+   ],
+   "urgent_type": "BREAKDOWN",
+   "status": [
+    "OPEN",
+    "IN_PROGRESS",
+    "DONE",
+    "CANCELLED"
+   ],
+   "open_ts": "reported_ts",
+   "close_ts": "finished_ts",
+   "open_verb": "reported",
+   "close_verb": "finished",
+   "amount_col": "parts_cost_aud",
+   "amount_range": [
+    0,
+    40000
+   ],
+   "qty_col": "downtime_hours",
+   "qty_range": [
+    0.25,
+    72
+   ],
+   "descriptions": [
+    "Spindle bearing noise",
+    "Hydraulic leak on ram",
+    "Mould temperature drift",
+    "Gripper misalignment",
+    "Belt slipping",
+    "Tool change overdue",
+    "Servo overload alarm",
+    "Coolant contamination"
+   ],
+   "owner": "Maintenance"
+  },
+  "reading": {
+   "table": "machine_telemetry",
+   "src": "machine_telemetry",
+   "label": "machine telemetry",
+   "fact": "machine_telemetry",
+   "monitored": 24,
+   "monitored_types": [
+    "CNC_MILL",
+    "INJECTION_MOULDER",
+    "STAMPING_PRESS"
+   ],
+   "metrics": [
+    {
+     "col": "vibration_mm_s",
+     "label": "vibration",
+     "unit": "mm/s",
+     "base": 3.2,
+     "sd": 1.0,
+     "min": 0,
+     "max": 50,
+     "threshold": 7.1
+    },
+    {
+     "col": "units_produced",
+     "label": "units produced",
+     "unit": "units",
+     "base": 110,
+     "sd": 30,
+     "min": 0,
+     "max": 5000
+    },
+    {
+     "col": "motor_temp_c",
+     "label": "motor temperature",
+     "unit": "°C",
+     "base": 58,
+     "sd": 7,
+     "min": -10,
+     "max": 160
+    }
+   ],
+   "sentinel": 999.9,
+   "owner": "Manufacturing Engineering"
+  },
+  "party": {
+   "table": "distributor_contact",
+   "src": "distributor_contacts",
+   "label": "distributor contact",
+   "plural": "distributor contacts",
+   "id": "contact_id",
+   "id_prefix": "DC",
+   "sf_type": "contact",
+   "segment_col": "channel",
+   "segments": [
+    "Distributor",
+    "OEM",
+    "Retail chain",
+    "Export"
+   ],
+   "status": [
+    "Active",
+    "Inactive"
+   ],
+   "sensitive_col": "driver_licence_no",
+   "sensitive_label": "driver licence number",
+   "sensitive_treatment": "drop",
+   "owner": "Sales Operations",
+   "count": 300
+  },
+  "extra": {
+   "table": "energy_price",
+   "src": "energy_prices",
+   "label": "wholesale energy prices",
+   "sys": "tel",
+   "cols": [
+    {
+     "col": "avg_price_mwh",
+     "base": 95,
+     "sd": 30,
+     "min": -1000,
+     "max": 17500
+    },
+    {
+     "col": "peak_price_mwh",
+     "base": 210,
+     "sd": 90,
+     "min": -1000,
+     "max": 17500
+    },
+    {
+     "col": "max_temp_c",
+     "base": 26,
+     "sd": 6,
+     "min": -10,
+     "max": 50
+    }
+   ],
+   "cat_col": "price_band",
+   "cat_values": [
+    "Low",
+    "Normal",
+    "High",
+    "Spike"
+   ],
+   "owner": "Operations Finance",
+   "story": "energy price spikes against breakdowns by plant"
+  },
+  "alert": {
+   "stream": "machine_alarm",
+   "label": "machine alarm",
+   "codes": [
+    "OVER_TEMP",
+    "E_STOP",
+    "JAM"
+   ],
+   "storm": "line stoppage"
+  },
+  "ref": {
+   "title": "Maintenance response targets",
+   "owner": "Maintenance",
+   "rows": [
+    [
+     "BREAKDOWN",
+     "Unplanned",
+     4,
+     "Maintenance Rapid Response"
+    ],
+    [
+     "PREVENTIVE",
+     "Planned",
+     168,
+     "Maintenance Planning"
+    ],
+    [
+     "CALIBRATION",
+     "Quality",
+     72,
+     "Quality Assurance"
+    ],
+    [
+     "CHANGEOVER",
+     "Planned",
+     8,
+     "Production"
+    ]
+   ]
+  },
+  "ai": {
+   "persona": "plant operations and maintenance",
+   "cust": "discrete and process manufacturers, including food and beverage",
+   "q_model": [
+    "Which plant had the most breakdown hours this month?",
+    "Show parts cost by machine type and month.",
+    "Which bottleneck machines (criticality 4 or 5) have open maintenance orders?"
+   ],
+   "q_agent": [
+    "Which 10 machines have the highest risk score and how many open maintenance orders does each have?",
+    "Compare average hours to finish breakdowns by plant.",
+    "Which machines exceeded 7.1 mm/s vibration in the last 3 days?",
+    "What was the total downtime caused by breakdowns in Geelong?",
+    "How many OEM contacts are active per plant?"
+   ],
+   "q_onto": [
+    "Show injection moulders in Dandenong with an open breakdown and a high risk band.",
+    "For the machine with the highest vibration, list its maintenance orders and their parts cost.",
+    "Which distributor contacts are linked to machines currently in maintenance?"
+   ]
+  },
+  "impact": {
+   "col": "downtime_cost_at_risk_aud",
+   "label": "downtime cost at risk",
+   "open_cost": 5000,
+   "breach_cost": 3000,
+   "cap_rate": 2,
+   "rule": "$5,000 per open maintenance order + $3,000 per 15-min window above the vibration limit + rated units/hour x criticality x $2"
+  }
+ },
+ "source_system": [
+  {
+   "source_system": "mes",
+   "industry": "manufacturing",
+   "display_name": "Manufacturing Execution System (on-prem SQL Server)",
+   "system_type": "Database",
+   "connection_pattern": "On-premises data gateway -> pipeline Copy with watermark query",
+   "technical_owner": "Plant IT",
+   "fabric_options": "Mirroring for SQL Server vs Copy job incremental vs pipeline Copy through the gateway"
+  },
+  {
+   "source_system": "iot",
+   "industry": "manufacturing",
+   "display_name": "Machine IoT historian (15-min CSV) and energy price feed",
+   "system_type": "OT file drop",
+   "connection_pattern": "Files dropped to OneLake (Files/landing) every 15 minutes",
+   "technical_owner": "Manufacturing Engineering",
+   "fabric_options": "Eventstream from IoT Hub / MQTT for real time; files to OneLake for batch"
+  },
+  {
+   "source_system": "d365",
+   "industry": "manufacturing",
+   "display_name": "Dynamics 365 Sales (distributor contacts)",
+   "system_type": "SaaS CRM",
+   "connection_pattern": "REST/OData API -> JSON landed per day",
+   "technical_owner": "Sales Operations",
+   "fabric_options": "Link to Microsoft Fabric (Dataverse) or Copy job"
+  }
+ ],
+ "ingestion_object": [
+  {
+   "object_id": "MF_MES_MACHINES",
+   "industry": "manufacturing",
+   "source_system": "mes",
+   "source_object": "machines",
+   "source_type": "database",
+   "ingest_method": "copy_db",
+   "landing_format": "csv",
+   "landing_path": "landing/mes/machines",
+   "read_options": "{\"header\": true, \"delimiter\": \",\"}",
+   "source_table": "src.machines",
+   "load_type": "incremental",
+   "watermark_column": "last_modified",
+   "primary_keys": "machine_id",
+   "dedupe_order_by": "last_modified DESC, _ingested_at DESC",
+   "bronze_table": "mes_machines",
+   "silver_table": "machine",
+   "silver_write_mode": "merge_scd2",
+   "load_group": "reference",
+   "priority": 10,
+   "sla_hours": 26,
+   "data_owner": "Manufacturing Engineering",
+   "sensitivity": "Internal",
+   "active": true,
+   "description": "Machine register. SCD2 keeps status, criticality and rated_units_per_hour history.",
+   "fabric_alternative": "Strong mirroring candidate - small, slowly changing, needed in near real time by operations"
+  },
+  {
+   "object_id": "MF_MES_MAINTENANCE_ORDERS",
+   "industry": "manufacturing",
+   "source_system": "mes",
+   "source_object": "maintenance_orders",
+   "source_type": "database",
+   "ingest_method": "copy_db",
+   "landing_format": "csv",
+   "landing_path": "landing/mes/maintenance_orders",
+   "read_options": "{\"header\": true, \"delimiter\": \",\"}",
+   "source_table": "src.maintenance_orders",
+   "load_type": "incremental",
+   "watermark_column": "last_modified",
+   "primary_keys": "mo_id",
+   "dedupe_order_by": "last_modified DESC, _ingested_at DESC",
+   "bronze_table": "mes_maintenance_orders",
+   "silver_table": "maintenance_order",
+   "silver_write_mode": "merge_scd1",
+   "load_group": "transactional",
+   "priority": 20,
+   "sla_hours": 26,
+   "data_owner": "Maintenance",
+   "sensitivity": "Internal",
+   "active": true,
+   "description": "Maintenance orders - incremental by last_modified; can arrive before their machine (late-arriving).",
+   "fabric_alternative": "Copy job incremental or mirroring; keep the watermark query if the source is on-prem"
+  },
+  {
+   "object_id": "MF_IOT_MACHINE_TELEMETRY",
+   "industry": "manufacturing",
+   "source_system": "iot",
+   "source_object": "machine_telemetry",
+   "source_type": "file",
+   "ingest_method": "landed_file",
+   "landing_format": "csv",
+   "landing_path": "landing/iot/machine_telemetry",
+   "read_options": "{\"header\": true, \"delimiter\": \",\"}",
+   "source_table": null,
+   "load_type": "incremental",
+   "watermark_column": null,
+   "primary_keys": "machine_id,reading_ts",
+   "dedupe_order_by": "_ingested_at DESC",
+   "bronze_table": "iot_machine_telemetry",
+   "silver_table": "machine_telemetry",
+   "silver_write_mode": "insert_only",
+   "load_group": "telemetry",
+   "priority": 30,
+   "sla_hours": 2,
+   "data_owner": "Manufacturing Engineering",
+   "sensitivity": "Internal",
+   "active": true,
+   "description": "Machine telemetry every 15 minutes, four micro-batch files a day. Insert-only and idempotent.",
+   "fabric_alternative": "Eventstream into Eventhouse for real time; keep this batch path for history and reconciliation"
+  },
+  {
+   "object_id": "MF_D365_DISTRIBUTOR_CONTACTS",
+   "industry": "manufacturing",
+   "source_system": "d365",
+   "source_object": "distributor_contacts",
+   "source_type": "api",
+   "ingest_method": "landed_file",
+   "landing_format": "json",
+   "landing_path": "landing/d365/distributor_contacts",
+   "read_options": "{\"multiline\": true, \"json_root\": \"records\"}",
+   "source_table": null,
+   "load_type": "full",
+   "watermark_column": null,
+   "primary_keys": "contact_id",
+   "dedupe_order_by": "last_modified_ts DESC, _ingested_at DESC",
+   "bronze_table": "d365_distributor_contacts",
+   "silver_table": "distributor_contact",
+   "silver_write_mode": "merge_scd1",
+   "load_group": "reference",
+   "priority": 15,
+   "sla_hours": 26,
+   "data_owner": "Sales Operations",
+   "sensitivity": "Confidential",
+   "active": true,
+   "description": "Distributor contacts - full daily snapshot from the CRM API (contains PII). Missing rows are soft-deleted.",
+   "fabric_alternative": "Copy job with the CRM connector; Dataverse-based CRMs can use Link to Fabric instead of copying"
+  }
+ ],
+ "column_map": [
+  {
+   "object_id": "MF_MES_MACHINES",
+   "column_order": 0,
+   "source_column": "machine_id",
+   "target_column": "machine_id",
+   "data_type": "int",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "MF_MES_MACHINES",
+   "column_order": 1,
+   "source_column": "machine_code",
+   "target_column": "machine_code",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "MF_MES_MACHINES",
+   "column_order": 2,
+   "source_column": "machine_name",
+   "target_column": "machine_name",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "MF_MES_MACHINES",
+   "column_order": 3,
+   "source_column": "machine_type",
+   "target_column": "machine_type",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "MF_MES_MACHINES",
+   "column_order": 4,
+   "source_column": "plant",
+   "target_column": "plant",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "MF_MES_MACHINES",
+   "column_order": 5,
+   "source_column": "status",
+   "target_column": "status",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "MF_MES_MACHINES",
+   "column_order": 6,
+   "source_column": "criticality",
+   "target_column": "criticality",
+   "data_type": "int",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "MF_MES_MACHINES",
+   "column_order": 7,
+   "source_column": "rated_units_per_hour",
+   "target_column": "rated_units_per_hour",
+   "data_type": "double",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "MF_MES_MACHINES",
+   "column_order": 8,
+   "source_column": "commissioned_date",
+   "target_column": "commissioned_date",
+   "data_type": "date",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "MF_MES_MACHINES",
+   "column_order": 9,
+   "source_column": "last_modified",
+   "target_column": "last_modified",
+   "data_type": "timestamp",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "MF_MES_MAINTENANCE_ORDERS",
+   "column_order": 0,
+   "source_column": "mo_id",
+   "target_column": "mo_id",
+   "data_type": "int",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "MF_MES_MAINTENANCE_ORDERS",
+   "column_order": 1,
+   "source_column": "machine_id",
+   "target_column": "machine_id",
+   "data_type": "int",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "MF_MES_MAINTENANCE_ORDERS",
+   "column_order": 2,
+   "source_column": "mo_type",
+   "target_column": "mo_type",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "MF_MES_MAINTENANCE_ORDERS",
+   "column_order": 3,
+   "source_column": "priority",
+   "target_column": "priority",
+   "data_type": "int",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "MF_MES_MAINTENANCE_ORDERS",
+   "column_order": 4,
+   "source_column": "status",
+   "target_column": "status",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "MF_MES_MAINTENANCE_ORDERS",
+   "column_order": 5,
+   "source_column": "reported_ts",
+   "target_column": "reported_ts",
+   "data_type": "timestamp",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "MF_MES_MAINTENANCE_ORDERS",
+   "column_order": 6,
+   "source_column": "finished_ts",
+   "target_column": "finished_ts",
+   "data_type": "timestamp",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "MF_MES_MAINTENANCE_ORDERS",
+   "column_order": 7,
+   "source_column": "parts_cost_aud",
+   "target_column": "parts_cost_aud",
+   "data_type": "decimal(12,2)",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "MF_MES_MAINTENANCE_ORDERS",
+   "column_order": 8,
+   "source_column": "downtime_hours",
+   "target_column": "downtime_hours",
+   "data_type": "double",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "MF_MES_MAINTENANCE_ORDERS",
+   "column_order": 9,
+   "source_column": "description",
+   "target_column": "description",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "MF_MES_MAINTENANCE_ORDERS",
+   "column_order": 10,
+   "source_column": "last_modified",
+   "target_column": "last_modified",
+   "data_type": "timestamp",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "MF_IOT_MACHINE_TELEMETRY",
+   "column_order": 0,
+   "source_column": "machine_id",
+   "target_column": "machine_id",
+   "data_type": "int",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "MF_IOT_MACHINE_TELEMETRY",
+   "column_order": 1,
+   "source_column": "reading_time",
+   "target_column": "reading_ts",
+   "data_type": "timestamp",
+   "transform_expr": "to_timestamp(reading_time, 'dd/MM/yyyy HH:mm')",
+   "pii_treatment": "none",
+   "sensitivity": "none",
+   "description": ""
+  },
+  {
+   "object_id": "MF_IOT_MACHINE_TELEMETRY",
+   "column_order": 2,
+   "source_column": "vibration_mm_s",
+   "target_column": "vibration_mm_s",
+   "data_type": "double",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "MF_IOT_MACHINE_TELEMETRY",
+   "column_order": 3,
+   "source_column": "units_produced",
+   "target_column": "units_produced",
+   "data_type": "double",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "MF_IOT_MACHINE_TELEMETRY",
+   "column_order": 4,
+   "source_column": "motor_temp_c",
+   "target_column": "motor_temp_c",
+   "data_type": "double",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "MF_D365_DISTRIBUTOR_CONTACTS",
+   "column_order": 0,
+   "source_column": "Id",
+   "target_column": "contact_id",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "MF_D365_DISTRIBUTOR_CONTACTS",
+   "column_order": 1,
+   "source_column": "FirstName",
+   "target_column": "first_name",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "drop",
+   "sensitivity": "Confidential",
+   "description": ""
+  },
+  {
+   "object_id": "MF_D365_DISTRIBUTOR_CONTACTS",
+   "column_order": 2,
+   "source_column": "LastName",
+   "target_column": "last_name",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "drop",
+   "sensitivity": "Confidential",
+   "description": ""
+  },
+  {
+   "object_id": "MF_D365_DISTRIBUTOR_CONTACTS",
+   "column_order": 3,
+   "source_column": "Email",
+   "target_column": "email_masked",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "mask_email",
+   "sensitivity": "Confidential",
+   "description": ""
+  },
+  {
+   "object_id": "MF_D365_DISTRIBUTOR_CONTACTS",
+   "column_order": 4,
+   "source_column": "MobilePhone",
+   "target_column": "mobile_masked",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "mask_phone",
+   "sensitivity": "Confidential",
+   "description": ""
+  },
+  {
+   "object_id": "MF_D365_DISTRIBUTOR_CONTACTS",
+   "column_order": 5,
+   "source_column": "Birthdate",
+   "target_column": "birth_year",
+   "data_type": "int",
+   "transform_expr": null,
+   "pii_treatment": "year_only",
+   "sensitivity": "Confidential",
+   "description": ""
+  },
+  {
+   "object_id": "MF_D365_DISTRIBUTOR_CONTACTS",
+   "column_order": 6,
+   "source_column": "MailingPostalCode",
+   "target_column": "postcode",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "MF_D365_DISTRIBUTOR_CONTACTS",
+   "column_order": 7,
+   "source_column": "Plant__c",
+   "target_column": "plant",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "MF_D365_DISTRIBUTOR_CONTACTS",
+   "column_order": 8,
+   "source_column": "Channel__c",
+   "target_column": "channel",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "MF_D365_DISTRIBUTOR_CONTACTS",
+   "column_order": 9,
+   "source_column": "MachineId__c",
+   "target_column": "machine_id",
+   "data_type": "int",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "MF_D365_DISTRIBUTOR_CONTACTS",
+   "column_order": 10,
+   "source_column": "Status__c",
+   "target_column": "status",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "MF_D365_DISTRIBUTOR_CONTACTS",
+   "column_order": 11,
+   "source_column": "DriverLicenceNo__c",
+   "target_column": "driver_licence_no",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "drop",
+   "sensitivity": "Restricted",
+   "description": ""
+  },
+  {
+   "object_id": "MF_D365_DISTRIBUTOR_CONTACTS",
+   "column_order": 12,
+   "source_column": "LastModifiedDate",
+   "target_column": "last_modified_ts",
+   "data_type": "timestamp",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  }
+ ],
+ "dq_rule": [
+  {
+   "rule_id": "MF-ENT-01",
+   "object_id": "MF_MES_MACHINES",
+   "rule_name": "Machine id present",
+   "rule_category": "technical",
+   "check_type": "not_null",
+   "column_name": "machine_id",
+   "params": "{}",
+   "severity": "fail",
+   "fail_threshold_pct": 0,
+   "rule_owner": "Data engineering",
+   "description": "Primary key must never be null",
+   "active": true
+  },
+  {
+   "rule_id": "MF-ENT-02",
+   "object_id": "MF_MES_MACHINES",
+   "rule_name": "Known machine_type",
+   "rule_category": "technical",
+   "check_type": "allowed_values",
+   "column_name": "machine_type",
+   "params": "{\"values\": [\"CNC_MILL\", \"INJECTION_MOULDER\", \"STAMPING_PRESS\", \"ROBOT_CELL\", \"CONVEYOR\"]}",
+   "severity": "warn",
+   "fail_threshold_pct": null,
+   "rule_owner": "Data engineering",
+   "description": "Unknown classes are kept but flagged for the data owner",
+   "active": true
+  },
+  {
+   "rule_id": "MF-ENT-03",
+   "object_id": "MF_MES_MACHINES",
+   "rule_name": "criticality between 1 and 5",
+   "rule_category": "technical",
+   "check_type": "range",
+   "column_name": "criticality",
+   "params": "{\"min\": 1, \"max\": 5}",
+   "severity": "warn",
+   "fail_threshold_pct": null,
+   "rule_owner": "Data engineering",
+   "description": "Out-of-range ratings usually mean a keying error in the source",
+   "active": true
+  },
+  {
+   "rule_id": "MF-ENT-04",
+   "object_id": "MF_MES_MACHINES",
+   "rule_name": "Known status",
+   "rule_category": "business",
+   "check_type": "allowed_values",
+   "column_name": "status",
+   "params": "{\"values\": [\"RUNNING\", \"IDLE\", \"MAINTENANCE\", \"RETIRED\"]}",
+   "severity": "warn",
+   "fail_threshold_pct": null,
+   "rule_owner": "Manufacturing Engineering",
+   "description": "Status list agreed with Manufacturing Engineering",
+   "active": true
+  },
+  {
+   "rule_id": "MF-EVT-01",
+   "object_id": "MF_MES_MAINTENANCE_ORDERS",
+   "rule_name": "Maintenance order id present",
+   "rule_category": "technical",
+   "check_type": "not_null",
+   "column_name": "mo_id",
+   "params": "{}",
+   "severity": "fail",
+   "fail_threshold_pct": 0,
+   "rule_owner": "Data engineering",
+   "description": "Primary key must never be null",
+   "active": true
+  },
+  {
+   "rule_id": "MF-EVT-02",
+   "object_id": "MF_MES_MAINTENANCE_ORDERS",
+   "rule_name": "Machine exists",
+   "rule_category": "technical",
+   "check_type": "referential",
+   "column_name": "machine_id",
+   "params": "{\"ref_table\": \"silver.machine\", \"ref_column\": \"machine_id\"}",
+   "severity": "quarantine",
+   "fail_threshold_pct": null,
+   "rule_owner": "Data engineering",
+   "description": "Held until the machine arrives (late-arriving reference data), then merged automatically",
+   "active": true
+  },
+  {
+   "rule_id": "MF-EVT-03",
+   "object_id": "MF_MES_MAINTENANCE_ORDERS",
+   "rule_name": "Finished after reported",
+   "rule_category": "business",
+   "check_type": "expression",
+   "column_name": null,
+   "params": "{\"expr\": \"finished_ts IS NULL OR finished_ts >= reported_ts\"}",
+   "severity": "quarantine",
+   "fail_threshold_pct": null,
+   "rule_owner": "Maintenance",
+   "description": "A maintenance order can't be finished before it was reported",
+   "active": true
+  },
+  {
+   "rule_id": "MF-EVT-04",
+   "object_id": "MF_MES_MAINTENANCE_ORDERS",
+   "rule_name": "parts_cost_aud not negative",
+   "rule_category": "technical",
+   "check_type": "range",
+   "column_name": "parts_cost_aud",
+   "params": "{\"min\": 0}",
+   "severity": "warn",
+   "fail_threshold_pct": null,
+   "rule_owner": "Data engineering",
+   "description": "Negative values are sign errors in the source extract",
+   "active": true
+  },
+  {
+   "rule_id": "MF-EVT-05",
+   "object_id": "MF_MES_MAINTENANCE_ORDERS",
+   "rule_name": "BREAKDOWN is priority 1",
+   "rule_category": "business",
+   "check_type": "expression",
+   "column_name": null,
+   "params": "{\"expr\": \"mo_type <> 'BREAKDOWN' OR priority = 1\"}",
+   "severity": "warn",
+   "fail_threshold_pct": null,
+   "rule_owner": "Maintenance",
+   "description": "Breakdown maintenance orders must be raised as priority 1",
+   "active": true
+  },
+  {
+   "rule_id": "MF-EVT-06",
+   "object_id": "MF_MES_MAINTENANCE_ORDERS",
+   "rule_name": "reported_ts parses",
+   "rule_category": "technical",
+   "check_type": "not_null",
+   "column_name": "reported_ts",
+   "params": "{}",
+   "severity": "fail",
+   "fail_threshold_pct": 5,
+   "rule_owner": "Data engineering",
+   "description": "If more than 5% of timestamps fail to parse, the extract format has changed - stop the load",
+   "active": true
+  },
+  {
+   "rule_id": "MF-RDG-01",
+   "object_id": "MF_IOT_MACHINE_TELEMETRY",
+   "rule_name": "Vibration plausible",
+   "rule_category": "technical",
+   "check_type": "range",
+   "column_name": "vibration_mm_s",
+   "params": "{\"min\": 0, \"max\": 50}",
+   "severity": "quarantine",
+   "fail_threshold_pct": null,
+   "rule_owner": "Data engineering",
+   "description": "Sensor fault values (e.g. 999.9) are quarantined, never averaged into Gold",
+   "active": true
+  },
+  {
+   "rule_id": "MF-RDG-02",
+   "object_id": "MF_IOT_MACHINE_TELEMETRY",
+   "rule_name": "Machine known",
+   "rule_category": "technical",
+   "check_type": "referential",
+   "column_name": "machine_id",
+   "params": "{\"ref_table\": \"silver.machine\", \"ref_column\": \"machine_id\"}",
+   "severity": "warn",
+   "fail_threshold_pct": null,
+   "rule_owner": "Data engineering",
+   "description": "Readings for unknown tags are flagged",
+   "active": true
+  },
+  {
+   "rule_id": "MF-RDG-03",
+   "object_id": "MF_IOT_MACHINE_TELEMETRY",
+   "rule_name": "Reading time parses",
+   "rule_category": "technical",
+   "check_type": "not_null",
+   "column_name": "reading_ts",
+   "params": "{}",
+   "severity": "fail",
+   "fail_threshold_pct": 5,
+   "rule_owner": "Data engineering",
+   "description": "Timestamp format change stops the load",
+   "active": true
+  },
+  {
+   "rule_id": "MF-PTY-01",
+   "object_id": "MF_D365_DISTRIBUTOR_CONTACTS",
+   "rule_name": "Distributor contact id present",
+   "rule_category": "technical",
+   "check_type": "not_null",
+   "column_name": "contact_id",
+   "params": "{}",
+   "severity": "fail",
+   "fail_threshold_pct": 0,
+   "rule_owner": "Data engineering",
+   "description": "Primary key must never be null",
+   "active": true
+  },
+  {
+   "rule_id": "MF-PTY-02",
+   "object_id": "MF_D365_DISTRIBUTOR_CONTACTS",
+   "rule_name": "Email looks valid",
+   "rule_category": "technical",
+   "check_type": "regex",
+   "column_name": "email_masked",
+   "params": "{\"pattern\": \"^[^@\\\\s]+@[^@\\\\s]+\\\\.[^@\\\\s]+$\"}",
+   "severity": "warn",
+   "fail_threshold_pct": null,
+   "rule_owner": "Data engineering",
+   "description": "Checked on the raw value before masking",
+   "active": true
+  },
+  {
+   "rule_id": "MF-PTY-03",
+   "object_id": "MF_D365_DISTRIBUTOR_CONTACTS",
+   "rule_name": "Australian postcode",
+   "rule_category": "technical",
+   "check_type": "regex",
+   "column_name": "postcode",
+   "params": "{\"pattern\": \"^\\\\d{4}$\"}",
+   "severity": "warn",
+   "fail_threshold_pct": null,
+   "rule_owner": "Data engineering",
+   "description": "Four digits",
+   "active": true
+  },
+  {
+   "rule_id": "MF-PTY-04",
+   "object_id": "MF_D365_DISTRIBUTOR_CONTACTS",
+   "rule_name": "Known channel",
+   "rule_category": "business",
+   "check_type": "allowed_values",
+   "column_name": "channel",
+   "params": "{\"values\": [\"Distributor\", \"OEM\", \"Retail chain\", \"Export\"]}",
+   "severity": "warn",
+   "fail_threshold_pct": null,
+   "rule_owner": "Sales Operations",
+   "description": "Segments agreed with Sales Operations",
+   "active": true
+  }
+ ],
+ "gold_transform": [
+  {
+   "transform_id": "MF-G01",
+   "industry": "manufacturing",
+   "gold_table": "dim_date",
+   "run_order": 100,
+   "sql_text": "SELECT CAST(date_format(d, 'yyyyMMdd') AS INT) AS date_key, d AS calendar_date, year(d) AS calendar_year, quarter(d) AS calendar_quarter, month(d) AS month_number, date_format(d, 'MMM') AS month_name, date_format(d, 'yyyy-MM') AS year_month, dayofmonth(d) AS day_of_month, date_format(d, 'EEE') AS day_name, CASE WHEN month(d) >= 7 THEN year(d) + 1 ELSE year(d) END AS fy_year, concat('FY', substring(CAST(CASE WHEN month(d) >= 7 THEN year(d) + 1 ELSE year(d) END AS STRING), 3, 2)) AS fy_label, CASE WHEN dayofweek(d) IN (1, 7) THEN true ELSE false END AS is_weekend FROM (SELECT explode(sequence(to_date('2020-01-01'), to_date('2028-12-31'), interval 1 day)) AS d) dates",
+   "description": "Calendar with Australian financial year",
+   "business_owner": "Data engineering",
+   "consumers": "Power BI / Direct Lake, data agent",
+   "active": true
+  },
+  {
+   "transform_id": "MF-G02",
+   "industry": "manufacturing",
+   "gold_table": "dim_machine",
+   "run_order": 110,
+   "sql_text": "SELECT machine_id, machine_code, machine_name, machine_type, plant, status, criticality, rated_units_per_hour, commissioned_date, CAST(floor(months_between(current_date(), commissioned_date) / 12) AS INT) AS age_years, _valid_from AS version_valid_from FROM silver.machine WHERE _is_current = true",
+   "description": "Current view of the machine register (history stays in Silver SCD2)",
+   "business_owner": "Manufacturing Engineering",
+   "consumers": "Power BI / Direct Lake, data agent",
+   "active": true
+  },
+  {
+   "transform_id": "MF-G03",
+   "industry": "manufacturing",
+   "gold_table": "fact_maintenance_order",
+   "run_order": 120,
+   "sql_text": "SELECT v.mo_id, v.machine_id, v.mo_type, v.priority, v.status, v.reported_ts, v.finished_ts, to_date(v.reported_ts) AS opened_date, CAST(date_format(v.reported_ts, 'yyyyMMdd') AS INT) AS opened_date_key, ROUND((unix_timestamp(v.finished_ts) - unix_timestamp(v.reported_ts)) / 3600.0, 2) AS hours_to_close, CASE WHEN v.status IN ('OPEN', 'IN_PROGRESS') THEN 1 ELSE 0 END AS is_open, v.parts_cost_aud, v.downtime_hours, d.plant, d.machine_type, d.criticality FROM silver.maintenance_order v LEFT JOIN silver.machine d ON d.machine_id = v.machine_id AND d._is_current = true WHERE v._is_deleted = false",
+   "description": "Maintenance orders with duration and machine attributes",
+   "business_owner": "Maintenance",
+   "consumers": "Power BI / Direct Lake, data agent",
+   "active": true
+  },
+  {
+   "transform_id": "MF-G04",
+   "industry": "manufacturing",
+   "gold_table": "fact_machine_telemetry_hourly",
+   "run_order": 130,
+   "sql_text": "SELECT machine_id, date_trunc('HOUR', reading_ts) AS reading_hour, to_date(reading_ts) AS reading_date, CAST(date_format(reading_ts, 'yyyyMMdd') AS INT) AS reading_date_key, COUNT(*) AS readings, ROUND(AVG(vibration_mm_s), 2) AS avg_vibration_mm_s, ROUND(MAX(vibration_mm_s), 2) AS max_vibration_mm_s, ROUND(AVG(units_produced), 2) AS avg_units_produced, ROUND(AVG(motor_temp_c), 2) AS avg_motor_temp_c, SUM(CASE WHEN vibration_mm_s > 7.1 THEN 1 ELSE 0 END) AS breach_readings FROM silver.machine_telemetry GROUP BY machine_id, date_trunc('HOUR', reading_ts), to_date(reading_ts), CAST(date_format(reading_ts, 'yyyyMMdd') AS INT)",
+   "description": "Hourly machine telemetry with threshold breaches",
+   "business_owner": "Manufacturing Engineering",
+   "consumers": "Power BI / Direct Lake, data agent",
+   "active": true
+  },
+  {
+   "transform_id": "MF-G05",
+   "industry": "manufacturing",
+   "gold_table": "machine_health_scorecard",
+   "run_order": 200,
+   "sql_text": "WITH asat AS (SELECT MAX(to_date(reported_ts)) AS as_at FROM silver.maintenance_order), ev AS (SELECT v.machine_id, COUNT(*) AS maintenance_orders_12m, SUM(CASE WHEN v.status IN ('OPEN', 'IN_PROGRESS') THEN 1 ELSE 0 END) AS open_maintenance_orders, SUM(CASE WHEN v.mo_type = 'BREAKDOWN' THEN 1 ELSE 0 END) AS urgent_maintenance_orders_12m, ROUND(SUM(v.parts_cost_aud), 2) AS parts_cost_aud_12m FROM silver.maintenance_order v CROSS JOIN asat WHERE v._is_deleted = false AND to_date(v.reported_ts) > add_months(asat.as_at, -12) GROUP BY v.machine_id), rd AS (SELECT machine_id, MAX(vibration_mm_s) AS max_vibration_mm_s, SUM(CASE WHEN vibration_mm_s > 7.1 THEN 1 ELSE 0 END) AS breach_readings FROM silver.machine_telemetry GROUP BY machine_id), s AS (SELECT d.machine_id, d.machine_code, d.machine_name, d.machine_type, d.plant, d.status, d.criticality, COALESCE(ev.maintenance_orders_12m, 0) AS maintenance_orders_12m, COALESCE(ev.open_maintenance_orders, 0) AS open_maintenance_orders, COALESCE(ev.urgent_maintenance_orders_12m, 0) AS urgent_maintenance_orders_12m, COALESCE(ev.parts_cost_aud_12m, 0) AS parts_cost_aud_12m, rd.max_vibration_mm_s, COALESCE(rd.breach_readings, 0) AS breach_readings, d.rated_units_per_hour FROM silver.machine d LEFT JOIN ev ON ev.machine_id = d.machine_id LEFT JOIN rd ON rd.machine_id = d.machine_id WHERE d._is_current = true) SELECT s.*, ROUND(LEAST(100, COALESCE(s.criticality, 1) * 8 + s.open_maintenance_orders * 6 + s.urgent_maintenance_orders_12m * 4 + LEAST(s.breach_readings, 20) * 1.5), 1) AS risk_score, CASE WHEN LEAST(100, COALESCE(s.criticality, 1) * 8 + s.open_maintenance_orders * 6 + s.urgent_maintenance_orders_12m * 4 + LEAST(s.breach_readings, 20) * 1.5) >= 60 THEN 'High' WHEN LEAST(100, COALESCE(s.criticality, 1) * 8 + s.open_maintenance_orders * 6 + s.urgent_maintenance_orders_12m * 4 + LEAST(s.breach_readings, 20) * 1.5) >= 35 THEN 'Medium' ELSE 'Low' END AS risk_band, ROUND(s.open_maintenance_orders * 5000 + LEAST(s.breach_readings, 20) * 3000 + COALESCE(s.rated_units_per_hour, 0) * COALESCE(s.criticality, 1) * 2, 0) AS downtime_cost_at_risk_aud FROM s",
+   "description": "Machine risk score - maintenance orders, urgent work and vibration breaches, plus downtime cost at risk in AUD (weights and dollar rates are illustrative: $5,000 per open maintenance order + $3,000 per 15-min window above the vibration limit + rated units/hour x criticality x $2)",
+   "business_owner": "Manufacturing Engineering",
+   "consumers": "Power BI / Direct Lake, data agent",
+   "active": true
+  },
+  {
+   "transform_id": "MF-G06",
+   "industry": "manufacturing",
+   "gold_table": "distributor_contact_summary",
+   "run_order": 210,
+   "sql_text": "SELECT plant, channel, COUNT(*) AS distributor_contacts, SUM(CASE WHEN status = 'Active' THEN 1 ELSE 0 END) AS active_distributor_contacts, ROUND(AVG(year(current_date()) - birth_year), 1) AS avg_age, COUNT(DISTINCT machine_id) AS linked_machines FROM silver.distributor_contact WHERE _is_deleted = false GROUP BY plant, channel",
+   "description": "Distributor contacts by plant and channel",
+   "business_owner": "Sales Operations",
+   "consumers": "Power BI / Direct Lake, data agent",
+   "active": true
+  }
+ ],
+ "onboard": {
+  "object": {
+   "object_id": "MF_IOT_ENERGY_PRICES",
+   "industry": "manufacturing",
+   "source_system": "iot",
+   "source_object": "energy_prices",
+   "source_type": "file",
+   "ingest_method": "landed_file",
+   "landing_format": "txt",
+   "landing_path": "landing/iot/energy_prices",
+   "read_options": "{\"header\": true, \"delimiter\": \"|\"}",
+   "source_table": null,
+   "load_type": "incremental",
+   "watermark_column": null,
+   "primary_keys": "plant,obs_date",
+   "dedupe_order_by": "_ingested_at DESC",
+   "bronze_table": "iot_energy_prices",
+   "silver_table": "energy_price",
+   "silver_write_mode": "merge_scd1",
+   "load_group": "reference",
+   "priority": 25,
+   "sla_hours": 26,
+   "data_owner": "Operations Finance",
+   "sensitivity": "Public",
+   "active": true,
+   "description": "Daily wholesale energy prices by plant (pipe-delimited, dd/MM/yyyy) - onboarded live in the demo",
+   "fabric_alternative": "Public or partner feed - could be a REST copy, or a shortcut if the provider shares a folder"
+  },
+  "columns": [
+   [
+    "plant",
+    "plant",
+    "string",
+    null
+   ],
+   [
+    "obs_date",
+    "obs_date",
+    "date",
+    "to_date(obs_date, 'dd/MM/yyyy')"
+   ],
+   [
+    "avg_price_mwh",
+    "avg_price_mwh",
+    "double",
+    null
+   ],
+   [
+    "peak_price_mwh",
+    "peak_price_mwh",
+    "double",
+    null
+   ],
+   [
+    "max_temp_c",
+    "max_temp_c",
+    "double",
+    null
+   ],
+   [
+    "price_band",
+    "price_band",
+    "string",
+    null
+   ]
+  ],
+  "rules": [
+   [
+    "MF-EXT-01",
+    "avg_price_mwh plausible",
+    "technical",
+    "range",
+    "avg_price_mwh",
+    "{\"min\": -1000, \"max\": 17500}",
+    "warn"
+   ],
+   [
+    "MF-EXT-02",
+    "Known price_band",
+    "business",
+    "allowed_values",
+    "price_band",
+    "{\"values\": [\"Low\", \"Normal\", \"High\", \"Spike\"]}",
+    "warn"
+   ]
+  ],
+  "gold": {
+   "transform_id": "MF-G07",
+   "industry": "manufacturing",
+   "gold_table": "maintenance_order_vs_energy_price",
+   "run_order": 220,
+   "sql_text": "WITH ev AS (SELECT d.plant, to_date(v.reported_ts) AS obs_date, COUNT(*) AS maintenance_orders, SUM(CASE WHEN v.mo_type = 'BREAKDOWN' THEN 1 ELSE 0 END) AS urgent_maintenance_orders FROM silver.maintenance_order v JOIN silver.machine d ON d.machine_id = v.machine_id AND d._is_current = true WHERE v._is_deleted = false GROUP BY d.plant, to_date(v.reported_ts)) SELECT x.plant, x.obs_date, x.avg_price_mwh, x.peak_price_mwh, x.max_temp_c, x.price_band, COALESCE(ev.maintenance_orders, 0) AS maintenance_orders, COALESCE(ev.urgent_maintenance_orders, 0) AS urgent_maintenance_orders FROM silver.energy_price x LEFT JOIN ev ON ev.plant = x.plant AND ev.obs_date = x.obs_date WHERE x._is_deleted = false",
+   "description": "Energy price spikes against breakdowns by plant",
+   "business_owner": "Operations Finance",
+   "consumers": "Power BI / Direct Lake",
+   "active": true
+  }
+ }
+}

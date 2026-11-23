@@ -1,0 +1,1305 @@
+{
+ "pack": {
+  "id": "digital",
+  "industry": "Digital natives",
+  "org": "Lyrebird Apps",
+  "short": "LYB",
+  "prefix": "DN",
+  "tagline": "B2B SaaS scale-up selling a collaboration platform",
+  "email_domain": "lyrebird.example.com",
+  "region_col": "cloud_region",
+  "region_label": "cloud region",
+  "regions": [
+   "AU East",
+   "AU Southeast",
+   "SE Asia",
+   "US West",
+   "EU West"
+  ],
+  "name_words": [
+   "Acme",
+   "Nimbus",
+   "Quokka",
+   "Harbour",
+   "Summit",
+   "Pixel",
+   "Ember",
+   "Orbit",
+   "Tandem",
+   "Wombat"
+  ],
+  "sys": {
+   "ops": {
+    "code": "app",
+    "name": "Product database (Azure SQL / PostgreSQL)",
+    "type": "Database",
+    "owner": "Platform Engineering",
+    "fabric": "Mirroring for Azure SQL Database or Azure Database for PostgreSQL (no ETL) vs Copy job"
+   },
+   "tel": {
+    "code": "tel",
+    "name": "Product telemetry exports (15-min CSV) and marketing campaign feed",
+    "type": "Event export",
+    "owner": "Data Platform",
+    "fabric": "Eventstream from Event Hubs / Kafka; OneLake shortcut to S3/ADLS for exports"
+   },
+   "crm": {
+    "code": "hub",
+    "name": "HubSpot CRM (app users)",
+    "type": "SaaS CRM",
+    "owner": "Growth",
+    "fabric": "Copy job / pipeline with the REST connector"
+   }
+  },
+  "entity": {
+   "table": "tenant",
+   "src": "tenants",
+   "label": "tenant",
+   "plural": "tenants",
+   "id": "tenant_id",
+   "code": "tenant_slug",
+   "code_prefix": "TN",
+   "name_col": "tenant_name",
+   "type_col": "plan",
+   "types": [
+    "FREE",
+    "STARTER",
+    "PRO",
+    "BUSINESS",
+    "ENTERPRISE"
+   ],
+   "status": [
+    "ACTIVE",
+    "TRIAL",
+    "PAST_DUE",
+    "CHURNED"
+   ],
+   "tier_col": "account_tier",
+   "tier_label": "account tier (1-5, 5 = strategic)",
+   "cap_col": "seats",
+   "cap_label": "seats",
+   "cap_range": [
+    1,
+    5000
+   ],
+   "start_col": "signup_date",
+   "start_years": [
+    2018,
+    2025
+   ],
+   "drift_col": "success_manager",
+   "drift_values": [
+    "CSM team A",
+    "CSM team B",
+    "Self-serve"
+   ],
+   "owner": "Customer Success",
+   "count": 240
+  },
+  "event": {
+   "table": "support_ticket",
+   "src": "support_tickets",
+   "label": "support ticket",
+   "plural": "support tickets",
+   "id": "ticket_id",
+   "id_start": 100001,
+   "type_col": "ticket_type",
+   "types": [
+    "BUG",
+    "OUTAGE",
+    "BILLING",
+    "HOW_TO"
+   ],
+   "type_names": [
+    "Bug",
+    "Outage",
+    "Billing",
+    "How-to"
+   ],
+   "urgent_type": "OUTAGE",
+   "status": [
+    "OPEN",
+    "PENDING",
+    "SOLVED",
+    "CLOSED_NO_ACTION"
+   ],
+   "open_ts": "opened_ts",
+   "close_ts": "solved_ts",
+   "open_verb": "opened",
+   "close_verb": "solved",
+   "amount_col": "credit_aud",
+   "amount_range": [
+    0,
+    5000
+   ],
+   "qty_col": "agent_hours",
+   "qty_range": [
+    0.1,
+    20
+   ],
+   "descriptions": [
+    "Cannot export to PDF",
+    "Login loop on SSO",
+    "Invoice shows wrong seats",
+    "Webhook delivery failing",
+    "Slow search results",
+    "How to set up SCIM",
+    "Mobile app crashes on upload",
+    "API rate limit questions"
+   ],
+   "owner": "Customer Support"
+  },
+  "reading": {
+   "table": "usage_metric",
+   "src": "usage_metrics",
+   "label": "product usage metrics",
+   "fact": "usage",
+   "monitored": 24,
+   "monitored_types": [
+    "PRO",
+    "BUSINESS",
+    "ENTERPRISE"
+   ],
+   "metrics": [
+    {
+     "col": "p95_latency_ms",
+     "label": "p95 API latency",
+     "unit": "ms",
+     "base": 320,
+     "sd": 90,
+     "min": 0,
+     "max": 60000,
+     "threshold": 800
+    },
+    {
+     "col": "active_users",
+     "label": "active users",
+     "unit": "users",
+     "base": 140,
+     "sd": 60,
+     "min": 0,
+     "max": 100000
+    },
+    {
+     "col": "error_rate_pct",
+     "label": "error rate",
+     "unit": "%",
+     "base": 0.4,
+     "sd": 0.25,
+     "min": 0,
+     "max": 100
+    }
+   ],
+   "sentinel": -1,
+   "owner": "Data Platform"
+  },
+  "party": {
+   "table": "app_user",
+   "src": "app_users",
+   "label": "app user",
+   "plural": "app users",
+   "id": "user_id",
+   "id_prefix": "U",
+   "sf_type": "contact",
+   "segment_col": "user_role",
+   "segments": [
+    "Admin",
+    "Member",
+    "Guest",
+    "Billing"
+   ],
+   "status": [
+    "Active",
+    "Deactivated"
+   ],
+   "sensitive_col": "ip_address",
+   "sensitive_label": "last sign-in IP address",
+   "sensitive_treatment": "hash",
+   "owner": "Growth",
+   "count": 300
+  },
+  "extra": {
+   "table": "campaign_day",
+   "src": "campaigns",
+   "label": "marketing campaigns",
+   "sys": "tel",
+   "cols": [
+    {
+     "col": "spend_aud",
+     "base": 4000,
+     "sd": 1500,
+     "min": 0,
+     "max": 1000000
+    },
+    {
+     "col": "signups",
+     "base": 60,
+     "sd": 25,
+     "min": 0,
+     "max": 100000
+    },
+    {
+     "col": "click_through_pct",
+     "base": 2.4,
+     "sd": 0.8,
+     "min": 0,
+     "max": 100
+    }
+   ],
+   "cat_col": "channel",
+   "cat_values": [
+    "Paid search",
+    "Social",
+    "Partner",
+    "Email"
+   ],
+   "owner": "Growth",
+   "story": "campaign spend and sign-ups against support load by cloud region"
+  },
+  "alert": {
+   "stream": "platform_alert",
+   "label": "platform alert",
+   "codes": [
+    "API_5XX_SPIKE",
+    "LOGIN_FAILURES",
+    "PAYMENT_FAILED"
+   ],
+   "storm": "bad release"
+  },
+  "ref": {
+   "title": "Support SLAs by ticket type",
+   "owner": "Customer Support",
+   "rows": [
+    [
+     "BUG",
+     "Product",
+     48,
+     "Tier 2 Support"
+    ],
+    [
+     "OUTAGE",
+     "Critical",
+     2,
+     "SRE On-call"
+    ],
+    [
+     "BILLING",
+     "Commercial",
+     24,
+     "Billing Ops"
+    ],
+    [
+     "HOW_TO",
+     "Self-help",
+     72,
+     "Tier 1 Support"
+    ]
+   ]
+  },
+  "ai": {
+   "persona": "product, growth and customer success",
+   "cust": "SaaS scale-ups and fast-growing start-ups",
+   "q_model": [
+    "Which cloud region raised the most support tickets this month?",
+    "Show credits issued by ticket type and month.",
+    "Which strategic tenants (tier 4 or 5) have open outage tickets?"
+   ],
+   "q_agent": [
+    "Which 10 tenants have the highest risk score and how many open tickets does each have?",
+    "Compare average hours to solve outage tickets by cloud region.",
+    "Which tenants saw p95 latency above 800 ms in the last 3 days?",
+    "How much credit have we issued to Enterprise tenants?",
+    "How many admins are active across tenants in AU East?"
+   ],
+   "q_onto": [
+    "Show Enterprise tenants in AU East with an open outage ticket and a high risk band.",
+    "For the tenant with the worst latency, list its support tickets and the users affected.",
+    "Which app users belong to tenants that are past due?"
+   ]
+  },
+  "impact": {
+   "col": "arr_at_risk_aud",
+   "label": "ARR at risk",
+   "open_cost": 1500,
+   "breach_cost": 400,
+   "cap_rate": 12,
+   "rule": "$1,500 per open ticket + $400 per slow 15-min window + seats x account tier x $12"
+  }
+ },
+ "source_system": [
+  {
+   "source_system": "app",
+   "industry": "digital",
+   "display_name": "Product database (Azure SQL / PostgreSQL)",
+   "system_type": "Database",
+   "connection_pattern": "On-premises data gateway -> pipeline Copy with watermark query",
+   "technical_owner": "Platform Engineering",
+   "fabric_options": "Mirroring for Azure SQL Database or Azure Database for PostgreSQL (no ETL) vs Copy job"
+  },
+  {
+   "source_system": "tel",
+   "industry": "digital",
+   "display_name": "Product telemetry exports (15-min CSV) and marketing campaign feed",
+   "system_type": "Event export",
+   "connection_pattern": "Files dropped to OneLake (Files/landing) every 15 minutes",
+   "technical_owner": "Data Platform",
+   "fabric_options": "Eventstream from Event Hubs / Kafka; OneLake shortcut to S3/ADLS for exports"
+  },
+  {
+   "source_system": "hub",
+   "industry": "digital",
+   "display_name": "HubSpot CRM (app users)",
+   "system_type": "SaaS CRM",
+   "connection_pattern": "REST/OData API -> JSON landed per day",
+   "technical_owner": "Growth",
+   "fabric_options": "Copy job / pipeline with the REST connector"
+  }
+ ],
+ "ingestion_object": [
+  {
+   "object_id": "DN_APP_TENANTS",
+   "industry": "digital",
+   "source_system": "app",
+   "source_object": "tenants",
+   "source_type": "database",
+   "ingest_method": "copy_db",
+   "landing_format": "csv",
+   "landing_path": "landing/app/tenants",
+   "read_options": "{\"header\": true, \"delimiter\": \",\"}",
+   "source_table": "src.tenants",
+   "load_type": "incremental",
+   "watermark_column": "last_modified",
+   "primary_keys": "tenant_id",
+   "dedupe_order_by": "last_modified DESC, _ingested_at DESC",
+   "bronze_table": "app_tenants",
+   "silver_table": "tenant",
+   "silver_write_mode": "merge_scd2",
+   "load_group": "reference",
+   "priority": 10,
+   "sla_hours": 26,
+   "data_owner": "Customer Success",
+   "sensitivity": "Internal",
+   "active": true,
+   "description": "Tenant register. SCD2 keeps status, account_tier and seats history.",
+   "fabric_alternative": "Strong mirroring candidate - small, slowly changing, needed in near real time by operations"
+  },
+  {
+   "object_id": "DN_APP_SUPPORT_TICKETS",
+   "industry": "digital",
+   "source_system": "app",
+   "source_object": "support_tickets",
+   "source_type": "database",
+   "ingest_method": "copy_db",
+   "landing_format": "csv",
+   "landing_path": "landing/app/support_tickets",
+   "read_options": "{\"header\": true, \"delimiter\": \",\"}",
+   "source_table": "src.support_tickets",
+   "load_type": "incremental",
+   "watermark_column": "last_modified",
+   "primary_keys": "ticket_id",
+   "dedupe_order_by": "last_modified DESC, _ingested_at DESC",
+   "bronze_table": "app_support_tickets",
+   "silver_table": "support_ticket",
+   "silver_write_mode": "merge_scd1",
+   "load_group": "transactional",
+   "priority": 20,
+   "sla_hours": 26,
+   "data_owner": "Customer Support",
+   "sensitivity": "Internal",
+   "active": true,
+   "description": "Support tickets - incremental by last_modified; can arrive before their tenant (late-arriving).",
+   "fabric_alternative": "Copy job incremental or mirroring; keep the watermark query if the source is on-prem"
+  },
+  {
+   "object_id": "DN_TEL_USAGE_METRICS",
+   "industry": "digital",
+   "source_system": "tel",
+   "source_object": "usage_metrics",
+   "source_type": "file",
+   "ingest_method": "landed_file",
+   "landing_format": "csv",
+   "landing_path": "landing/tel/usage_metrics",
+   "read_options": "{\"header\": true, \"delimiter\": \",\"}",
+   "source_table": null,
+   "load_type": "incremental",
+   "watermark_column": null,
+   "primary_keys": "tenant_id,reading_ts",
+   "dedupe_order_by": "_ingested_at DESC",
+   "bronze_table": "tel_usage_metrics",
+   "silver_table": "usage_metric",
+   "silver_write_mode": "insert_only",
+   "load_group": "telemetry",
+   "priority": 30,
+   "sla_hours": 2,
+   "data_owner": "Data Platform",
+   "sensitivity": "Internal",
+   "active": true,
+   "description": "Product usage metrics every 15 minutes, four micro-batch files a day. Insert-only and idempotent.",
+   "fabric_alternative": "Eventstream into Eventhouse for real time; keep this batch path for history and reconciliation"
+  },
+  {
+   "object_id": "DN_HUB_APP_USERS",
+   "industry": "digital",
+   "source_system": "hub",
+   "source_object": "app_users",
+   "source_type": "api",
+   "ingest_method": "landed_file",
+   "landing_format": "json",
+   "landing_path": "landing/hub/app_users",
+   "read_options": "{\"multiline\": true, \"json_root\": \"records\"}",
+   "source_table": null,
+   "load_type": "full",
+   "watermark_column": null,
+   "primary_keys": "user_id",
+   "dedupe_order_by": "last_modified_ts DESC, _ingested_at DESC",
+   "bronze_table": "hub_app_users",
+   "silver_table": "app_user",
+   "silver_write_mode": "merge_scd1",
+   "load_group": "reference",
+   "priority": 15,
+   "sla_hours": 26,
+   "data_owner": "Growth",
+   "sensitivity": "Confidential",
+   "active": true,
+   "description": "App users - full daily snapshot from the CRM API (contains PII). Missing rows are soft-deleted.",
+   "fabric_alternative": "Copy job with the CRM connector; Dataverse-based CRMs can use Link to Fabric instead of copying"
+  }
+ ],
+ "column_map": [
+  {
+   "object_id": "DN_APP_TENANTS",
+   "column_order": 0,
+   "source_column": "tenant_id",
+   "target_column": "tenant_id",
+   "data_type": "int",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "DN_APP_TENANTS",
+   "column_order": 1,
+   "source_column": "tenant_slug",
+   "target_column": "tenant_slug",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "DN_APP_TENANTS",
+   "column_order": 2,
+   "source_column": "tenant_name",
+   "target_column": "tenant_name",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "DN_APP_TENANTS",
+   "column_order": 3,
+   "source_column": "plan",
+   "target_column": "plan",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "DN_APP_TENANTS",
+   "column_order": 4,
+   "source_column": "cloud_region",
+   "target_column": "cloud_region",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "DN_APP_TENANTS",
+   "column_order": 5,
+   "source_column": "status",
+   "target_column": "status",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "DN_APP_TENANTS",
+   "column_order": 6,
+   "source_column": "account_tier",
+   "target_column": "account_tier",
+   "data_type": "int",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "DN_APP_TENANTS",
+   "column_order": 7,
+   "source_column": "seats",
+   "target_column": "seats",
+   "data_type": "double",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "DN_APP_TENANTS",
+   "column_order": 8,
+   "source_column": "signup_date",
+   "target_column": "signup_date",
+   "data_type": "date",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "DN_APP_TENANTS",
+   "column_order": 9,
+   "source_column": "last_modified",
+   "target_column": "last_modified",
+   "data_type": "timestamp",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "DN_APP_SUPPORT_TICKETS",
+   "column_order": 0,
+   "source_column": "ticket_id",
+   "target_column": "ticket_id",
+   "data_type": "int",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "DN_APP_SUPPORT_TICKETS",
+   "column_order": 1,
+   "source_column": "tenant_id",
+   "target_column": "tenant_id",
+   "data_type": "int",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "DN_APP_SUPPORT_TICKETS",
+   "column_order": 2,
+   "source_column": "ticket_type",
+   "target_column": "ticket_type",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "DN_APP_SUPPORT_TICKETS",
+   "column_order": 3,
+   "source_column": "priority",
+   "target_column": "priority",
+   "data_type": "int",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "DN_APP_SUPPORT_TICKETS",
+   "column_order": 4,
+   "source_column": "status",
+   "target_column": "status",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "DN_APP_SUPPORT_TICKETS",
+   "column_order": 5,
+   "source_column": "opened_ts",
+   "target_column": "opened_ts",
+   "data_type": "timestamp",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "DN_APP_SUPPORT_TICKETS",
+   "column_order": 6,
+   "source_column": "solved_ts",
+   "target_column": "solved_ts",
+   "data_type": "timestamp",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "DN_APP_SUPPORT_TICKETS",
+   "column_order": 7,
+   "source_column": "credit_aud",
+   "target_column": "credit_aud",
+   "data_type": "decimal(12,2)",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "DN_APP_SUPPORT_TICKETS",
+   "column_order": 8,
+   "source_column": "agent_hours",
+   "target_column": "agent_hours",
+   "data_type": "double",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "DN_APP_SUPPORT_TICKETS",
+   "column_order": 9,
+   "source_column": "description",
+   "target_column": "description",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "DN_APP_SUPPORT_TICKETS",
+   "column_order": 10,
+   "source_column": "last_modified",
+   "target_column": "last_modified",
+   "data_type": "timestamp",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "DN_TEL_USAGE_METRICS",
+   "column_order": 0,
+   "source_column": "tenant_id",
+   "target_column": "tenant_id",
+   "data_type": "int",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "DN_TEL_USAGE_METRICS",
+   "column_order": 1,
+   "source_column": "reading_time",
+   "target_column": "reading_ts",
+   "data_type": "timestamp",
+   "transform_expr": "to_timestamp(reading_time, 'dd/MM/yyyy HH:mm')",
+   "pii_treatment": "none",
+   "sensitivity": "none",
+   "description": ""
+  },
+  {
+   "object_id": "DN_TEL_USAGE_METRICS",
+   "column_order": 2,
+   "source_column": "p95_latency_ms",
+   "target_column": "p95_latency_ms",
+   "data_type": "double",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "DN_TEL_USAGE_METRICS",
+   "column_order": 3,
+   "source_column": "active_users",
+   "target_column": "active_users",
+   "data_type": "double",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "DN_TEL_USAGE_METRICS",
+   "column_order": 4,
+   "source_column": "error_rate_pct",
+   "target_column": "error_rate_pct",
+   "data_type": "double",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "DN_HUB_APP_USERS",
+   "column_order": 0,
+   "source_column": "Id",
+   "target_column": "user_id",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "DN_HUB_APP_USERS",
+   "column_order": 1,
+   "source_column": "FirstName",
+   "target_column": "first_name",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "drop",
+   "sensitivity": "Confidential",
+   "description": ""
+  },
+  {
+   "object_id": "DN_HUB_APP_USERS",
+   "column_order": 2,
+   "source_column": "LastName",
+   "target_column": "last_name",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "drop",
+   "sensitivity": "Confidential",
+   "description": ""
+  },
+  {
+   "object_id": "DN_HUB_APP_USERS",
+   "column_order": 3,
+   "source_column": "Email",
+   "target_column": "email_masked",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "mask_email",
+   "sensitivity": "Confidential",
+   "description": ""
+  },
+  {
+   "object_id": "DN_HUB_APP_USERS",
+   "column_order": 4,
+   "source_column": "MobilePhone",
+   "target_column": "mobile_masked",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "mask_phone",
+   "sensitivity": "Confidential",
+   "description": ""
+  },
+  {
+   "object_id": "DN_HUB_APP_USERS",
+   "column_order": 5,
+   "source_column": "Birthdate",
+   "target_column": "birth_year",
+   "data_type": "int",
+   "transform_expr": null,
+   "pii_treatment": "year_only",
+   "sensitivity": "Confidential",
+   "description": ""
+  },
+  {
+   "object_id": "DN_HUB_APP_USERS",
+   "column_order": 6,
+   "source_column": "MailingPostalCode",
+   "target_column": "postcode",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "DN_HUB_APP_USERS",
+   "column_order": 7,
+   "source_column": "CloudRegion__c",
+   "target_column": "cloud_region",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "DN_HUB_APP_USERS",
+   "column_order": 8,
+   "source_column": "UserRole__c",
+   "target_column": "user_role",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "DN_HUB_APP_USERS",
+   "column_order": 9,
+   "source_column": "TenantId__c",
+   "target_column": "tenant_id",
+   "data_type": "int",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "DN_HUB_APP_USERS",
+   "column_order": 10,
+   "source_column": "Status__c",
+   "target_column": "status",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "DN_HUB_APP_USERS",
+   "column_order": 11,
+   "source_column": "IpAddress__c",
+   "target_column": "ip_address_hash",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "hash",
+   "sensitivity": "Restricted",
+   "description": ""
+  },
+  {
+   "object_id": "DN_HUB_APP_USERS",
+   "column_order": 12,
+   "source_column": "LastModifiedDate",
+   "target_column": "last_modified_ts",
+   "data_type": "timestamp",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  }
+ ],
+ "dq_rule": [
+  {
+   "rule_id": "DN-ENT-01",
+   "object_id": "DN_APP_TENANTS",
+   "rule_name": "Tenant id present",
+   "rule_category": "technical",
+   "check_type": "not_null",
+   "column_name": "tenant_id",
+   "params": "{}",
+   "severity": "fail",
+   "fail_threshold_pct": 0,
+   "rule_owner": "Data engineering",
+   "description": "Primary key must never be null",
+   "active": true
+  },
+  {
+   "rule_id": "DN-ENT-02",
+   "object_id": "DN_APP_TENANTS",
+   "rule_name": "Known plan",
+   "rule_category": "technical",
+   "check_type": "allowed_values",
+   "column_name": "plan",
+   "params": "{\"values\": [\"FREE\", \"STARTER\", \"PRO\", \"BUSINESS\", \"ENTERPRISE\"]}",
+   "severity": "warn",
+   "fail_threshold_pct": null,
+   "rule_owner": "Data engineering",
+   "description": "Unknown classes are kept but flagged for the data owner",
+   "active": true
+  },
+  {
+   "rule_id": "DN-ENT-03",
+   "object_id": "DN_APP_TENANTS",
+   "rule_name": "account_tier between 1 and 5",
+   "rule_category": "technical",
+   "check_type": "range",
+   "column_name": "account_tier",
+   "params": "{\"min\": 1, \"max\": 5}",
+   "severity": "warn",
+   "fail_threshold_pct": null,
+   "rule_owner": "Data engineering",
+   "description": "Out-of-range ratings usually mean a keying error in the source",
+   "active": true
+  },
+  {
+   "rule_id": "DN-ENT-04",
+   "object_id": "DN_APP_TENANTS",
+   "rule_name": "Known status",
+   "rule_category": "business",
+   "check_type": "allowed_values",
+   "column_name": "status",
+   "params": "{\"values\": [\"ACTIVE\", \"TRIAL\", \"PAST_DUE\", \"CHURNED\"]}",
+   "severity": "warn",
+   "fail_threshold_pct": null,
+   "rule_owner": "Customer Success",
+   "description": "Status list agreed with Customer Success",
+   "active": true
+  },
+  {
+   "rule_id": "DN-EVT-01",
+   "object_id": "DN_APP_SUPPORT_TICKETS",
+   "rule_name": "Support ticket id present",
+   "rule_category": "technical",
+   "check_type": "not_null",
+   "column_name": "ticket_id",
+   "params": "{}",
+   "severity": "fail",
+   "fail_threshold_pct": 0,
+   "rule_owner": "Data engineering",
+   "description": "Primary key must never be null",
+   "active": true
+  },
+  {
+   "rule_id": "DN-EVT-02",
+   "object_id": "DN_APP_SUPPORT_TICKETS",
+   "rule_name": "Tenant exists",
+   "rule_category": "technical",
+   "check_type": "referential",
+   "column_name": "tenant_id",
+   "params": "{\"ref_table\": \"silver.tenant\", \"ref_column\": \"tenant_id\"}",
+   "severity": "quarantine",
+   "fail_threshold_pct": null,
+   "rule_owner": "Data engineering",
+   "description": "Held until the tenant arrives (late-arriving reference data), then merged automatically",
+   "active": true
+  },
+  {
+   "rule_id": "DN-EVT-03",
+   "object_id": "DN_APP_SUPPORT_TICKETS",
+   "rule_name": "Solved after opened",
+   "rule_category": "business",
+   "check_type": "expression",
+   "column_name": null,
+   "params": "{\"expr\": \"solved_ts IS NULL OR solved_ts >= opened_ts\"}",
+   "severity": "quarantine",
+   "fail_threshold_pct": null,
+   "rule_owner": "Customer Support",
+   "description": "A support ticket can't be solved before it was opened",
+   "active": true
+  },
+  {
+   "rule_id": "DN-EVT-04",
+   "object_id": "DN_APP_SUPPORT_TICKETS",
+   "rule_name": "credit_aud not negative",
+   "rule_category": "technical",
+   "check_type": "range",
+   "column_name": "credit_aud",
+   "params": "{\"min\": 0}",
+   "severity": "warn",
+   "fail_threshold_pct": null,
+   "rule_owner": "Data engineering",
+   "description": "Negative values are sign errors in the source extract",
+   "active": true
+  },
+  {
+   "rule_id": "DN-EVT-05",
+   "object_id": "DN_APP_SUPPORT_TICKETS",
+   "rule_name": "OUTAGE is priority 1",
+   "rule_category": "business",
+   "check_type": "expression",
+   "column_name": null,
+   "params": "{\"expr\": \"ticket_type <> 'OUTAGE' OR priority = 1\"}",
+   "severity": "warn",
+   "fail_threshold_pct": null,
+   "rule_owner": "Customer Support",
+   "description": "Outage support tickets must be raised as priority 1",
+   "active": true
+  },
+  {
+   "rule_id": "DN-EVT-06",
+   "object_id": "DN_APP_SUPPORT_TICKETS",
+   "rule_name": "opened_ts parses",
+   "rule_category": "technical",
+   "check_type": "not_null",
+   "column_name": "opened_ts",
+   "params": "{}",
+   "severity": "fail",
+   "fail_threshold_pct": 5,
+   "rule_owner": "Data engineering",
+   "description": "If more than 5% of timestamps fail to parse, the extract format has changed - stop the load",
+   "active": true
+  },
+  {
+   "rule_id": "DN-RDG-01",
+   "object_id": "DN_TEL_USAGE_METRICS",
+   "rule_name": "P95 api latency plausible",
+   "rule_category": "technical",
+   "check_type": "range",
+   "column_name": "p95_latency_ms",
+   "params": "{\"min\": 0, \"max\": 60000}",
+   "severity": "quarantine",
+   "fail_threshold_pct": null,
+   "rule_owner": "Data engineering",
+   "description": "Sensor fault values (e.g. -1) are quarantined, never averaged into Gold",
+   "active": true
+  },
+  {
+   "rule_id": "DN-RDG-02",
+   "object_id": "DN_TEL_USAGE_METRICS",
+   "rule_name": "Tenant known",
+   "rule_category": "technical",
+   "check_type": "referential",
+   "column_name": "tenant_id",
+   "params": "{\"ref_table\": \"silver.tenant\", \"ref_column\": \"tenant_id\"}",
+   "severity": "warn",
+   "fail_threshold_pct": null,
+   "rule_owner": "Data engineering",
+   "description": "Readings for unknown tags are flagged",
+   "active": true
+  },
+  {
+   "rule_id": "DN-RDG-03",
+   "object_id": "DN_TEL_USAGE_METRICS",
+   "rule_name": "Reading time parses",
+   "rule_category": "technical",
+   "check_type": "not_null",
+   "column_name": "reading_ts",
+   "params": "{}",
+   "severity": "fail",
+   "fail_threshold_pct": 5,
+   "rule_owner": "Data engineering",
+   "description": "Timestamp format change stops the load",
+   "active": true
+  },
+  {
+   "rule_id": "DN-PTY-01",
+   "object_id": "DN_HUB_APP_USERS",
+   "rule_name": "App user id present",
+   "rule_category": "technical",
+   "check_type": "not_null",
+   "column_name": "user_id",
+   "params": "{}",
+   "severity": "fail",
+   "fail_threshold_pct": 0,
+   "rule_owner": "Data engineering",
+   "description": "Primary key must never be null",
+   "active": true
+  },
+  {
+   "rule_id": "DN-PTY-02",
+   "object_id": "DN_HUB_APP_USERS",
+   "rule_name": "Email looks valid",
+   "rule_category": "technical",
+   "check_type": "regex",
+   "column_name": "email_masked",
+   "params": "{\"pattern\": \"^[^@\\\\s]+@[^@\\\\s]+\\\\.[^@\\\\s]+$\"}",
+   "severity": "warn",
+   "fail_threshold_pct": null,
+   "rule_owner": "Data engineering",
+   "description": "Checked on the raw value before masking",
+   "active": true
+  },
+  {
+   "rule_id": "DN-PTY-03",
+   "object_id": "DN_HUB_APP_USERS",
+   "rule_name": "Australian postcode",
+   "rule_category": "technical",
+   "check_type": "regex",
+   "column_name": "postcode",
+   "params": "{\"pattern\": \"^\\\\d{4}$\"}",
+   "severity": "warn",
+   "fail_threshold_pct": null,
+   "rule_owner": "Data engineering",
+   "description": "Four digits",
+   "active": true
+  },
+  {
+   "rule_id": "DN-PTY-04",
+   "object_id": "DN_HUB_APP_USERS",
+   "rule_name": "Known user_role",
+   "rule_category": "business",
+   "check_type": "allowed_values",
+   "column_name": "user_role",
+   "params": "{\"values\": [\"Admin\", \"Member\", \"Guest\", \"Billing\"]}",
+   "severity": "warn",
+   "fail_threshold_pct": null,
+   "rule_owner": "Growth",
+   "description": "Segments agreed with Growth",
+   "active": true
+  }
+ ],
+ "gold_transform": [
+  {
+   "transform_id": "DN-G01",
+   "industry": "digital",
+   "gold_table": "dim_date",
+   "run_order": 100,
+   "sql_text": "SELECT CAST(date_format(d, 'yyyyMMdd') AS INT) AS date_key, d AS calendar_date, year(d) AS calendar_year, quarter(d) AS calendar_quarter, month(d) AS month_number, date_format(d, 'MMM') AS month_name, date_format(d, 'yyyy-MM') AS year_month, dayofmonth(d) AS day_of_month, date_format(d, 'EEE') AS day_name, CASE WHEN month(d) >= 7 THEN year(d) + 1 ELSE year(d) END AS fy_year, concat('FY', substring(CAST(CASE WHEN month(d) >= 7 THEN year(d) + 1 ELSE year(d) END AS STRING), 3, 2)) AS fy_label, CASE WHEN dayofweek(d) IN (1, 7) THEN true ELSE false END AS is_weekend FROM (SELECT explode(sequence(to_date('2020-01-01'), to_date('2028-12-31'), interval 1 day)) AS d) dates",
+   "description": "Calendar with Australian financial year",
+   "business_owner": "Data engineering",
+   "consumers": "Power BI / Direct Lake, data agent",
+   "active": true
+  },
+  {
+   "transform_id": "DN-G02",
+   "industry": "digital",
+   "gold_table": "dim_tenant",
+   "run_order": 110,
+   "sql_text": "SELECT tenant_id, tenant_slug, tenant_name, plan, cloud_region, status, account_tier, seats, signup_date, CAST(floor(months_between(current_date(), signup_date) / 12) AS INT) AS age_years, _valid_from AS version_valid_from FROM silver.tenant WHERE _is_current = true",
+   "description": "Current view of the tenant register (history stays in Silver SCD2)",
+   "business_owner": "Customer Success",
+   "consumers": "Power BI / Direct Lake, data agent",
+   "active": true
+  },
+  {
+   "transform_id": "DN-G03",
+   "industry": "digital",
+   "gold_table": "fact_support_ticket",
+   "run_order": 120,
+   "sql_text": "SELECT v.ticket_id, v.tenant_id, v.ticket_type, v.priority, v.status, v.opened_ts, v.solved_ts, to_date(v.opened_ts) AS opened_date, CAST(date_format(v.opened_ts, 'yyyyMMdd') AS INT) AS opened_date_key, ROUND((unix_timestamp(v.solved_ts) - unix_timestamp(v.opened_ts)) / 3600.0, 2) AS hours_to_close, CASE WHEN v.status IN ('OPEN', 'PENDING') THEN 1 ELSE 0 END AS is_open, v.credit_aud, v.agent_hours, d.cloud_region, d.plan, d.account_tier FROM silver.support_ticket v LEFT JOIN silver.tenant d ON d.tenant_id = v.tenant_id AND d._is_current = true WHERE v._is_deleted = false",
+   "description": "Support tickets with duration and tenant attributes",
+   "business_owner": "Customer Support",
+   "consumers": "Power BI / Direct Lake, data agent",
+   "active": true
+  },
+  {
+   "transform_id": "DN-G04",
+   "industry": "digital",
+   "gold_table": "fact_usage_hourly",
+   "run_order": 130,
+   "sql_text": "SELECT tenant_id, date_trunc('HOUR', reading_ts) AS reading_hour, to_date(reading_ts) AS reading_date, CAST(date_format(reading_ts, 'yyyyMMdd') AS INT) AS reading_date_key, COUNT(*) AS readings, ROUND(AVG(p95_latency_ms), 2) AS avg_p95_latency_ms, ROUND(MAX(p95_latency_ms), 2) AS max_p95_latency_ms, ROUND(AVG(active_users), 2) AS avg_active_users, ROUND(AVG(error_rate_pct), 2) AS avg_error_rate_pct, SUM(CASE WHEN p95_latency_ms > 800 THEN 1 ELSE 0 END) AS breach_readings FROM silver.usage_metric GROUP BY tenant_id, date_trunc('HOUR', reading_ts), to_date(reading_ts), CAST(date_format(reading_ts, 'yyyyMMdd') AS INT)",
+   "description": "Hourly product usage metrics with threshold breaches",
+   "business_owner": "Data Platform",
+   "consumers": "Power BI / Direct Lake, data agent",
+   "active": true
+  },
+  {
+   "transform_id": "DN-G05",
+   "industry": "digital",
+   "gold_table": "tenant_health_scorecard",
+   "run_order": 200,
+   "sql_text": "WITH asat AS (SELECT MAX(to_date(opened_ts)) AS as_at FROM silver.support_ticket), ev AS (SELECT v.tenant_id, COUNT(*) AS support_tickets_12m, SUM(CASE WHEN v.status IN ('OPEN', 'PENDING') THEN 1 ELSE 0 END) AS open_support_tickets, SUM(CASE WHEN v.ticket_type = 'OUTAGE' THEN 1 ELSE 0 END) AS urgent_support_tickets_12m, ROUND(SUM(v.credit_aud), 2) AS credit_aud_12m FROM silver.support_ticket v CROSS JOIN asat WHERE v._is_deleted = false AND to_date(v.opened_ts) > add_months(asat.as_at, -12) GROUP BY v.tenant_id), rd AS (SELECT tenant_id, MAX(p95_latency_ms) AS max_p95_latency_ms, SUM(CASE WHEN p95_latency_ms > 800 THEN 1 ELSE 0 END) AS breach_readings FROM silver.usage_metric GROUP BY tenant_id), s AS (SELECT d.tenant_id, d.tenant_slug, d.tenant_name, d.plan, d.cloud_region, d.status, d.account_tier, COALESCE(ev.support_tickets_12m, 0) AS support_tickets_12m, COALESCE(ev.open_support_tickets, 0) AS open_support_tickets, COALESCE(ev.urgent_support_tickets_12m, 0) AS urgent_support_tickets_12m, COALESCE(ev.credit_aud_12m, 0) AS credit_aud_12m, rd.max_p95_latency_ms, COALESCE(rd.breach_readings, 0) AS breach_readings, d.seats FROM silver.tenant d LEFT JOIN ev ON ev.tenant_id = d.tenant_id LEFT JOIN rd ON rd.tenant_id = d.tenant_id WHERE d._is_current = true) SELECT s.*, ROUND(LEAST(100, COALESCE(s.account_tier, 1) * 8 + s.open_support_tickets * 6 + s.urgent_support_tickets_12m * 4 + LEAST(s.breach_readings, 20) * 1.5), 1) AS risk_score, CASE WHEN LEAST(100, COALESCE(s.account_tier, 1) * 8 + s.open_support_tickets * 6 + s.urgent_support_tickets_12m * 4 + LEAST(s.breach_readings, 20) * 1.5) >= 60 THEN 'High' WHEN LEAST(100, COALESCE(s.account_tier, 1) * 8 + s.open_support_tickets * 6 + s.urgent_support_tickets_12m * 4 + LEAST(s.breach_readings, 20) * 1.5) >= 35 THEN 'Medium' ELSE 'Low' END AS risk_band, ROUND(s.open_support_tickets * 1500 + LEAST(s.breach_readings, 20) * 400 + COALESCE(s.seats, 0) * COALESCE(s.account_tier, 1) * 12, 0) AS arr_at_risk_aud FROM s",
+   "description": "Tenant risk score - support tickets, urgent work and p95 API latency breaches, plus ARR at risk in AUD (weights and dollar rates are illustrative: $1,500 per open ticket + $400 per slow 15-min window + seats x account tier x $12)",
+   "business_owner": "Customer Success",
+   "consumers": "Power BI / Direct Lake, data agent",
+   "active": true
+  },
+  {
+   "transform_id": "DN-G06",
+   "industry": "digital",
+   "gold_table": "app_user_summary",
+   "run_order": 210,
+   "sql_text": "SELECT cloud_region, user_role, COUNT(*) AS app_users, SUM(CASE WHEN status = 'Active' THEN 1 ELSE 0 END) AS active_app_users, ROUND(AVG(year(current_date()) - birth_year), 1) AS avg_age, COUNT(DISTINCT tenant_id) AS linked_tenants FROM silver.app_user WHERE _is_deleted = false GROUP BY cloud_region, user_role",
+   "description": "App users by cloud region and user_role",
+   "business_owner": "Growth",
+   "consumers": "Power BI / Direct Lake, data agent",
+   "active": true
+  }
+ ],
+ "onboard": {
+  "object": {
+   "object_id": "DN_TEL_CAMPAIGNS",
+   "industry": "digital",
+   "source_system": "tel",
+   "source_object": "campaigns",
+   "source_type": "file",
+   "ingest_method": "landed_file",
+   "landing_format": "txt",
+   "landing_path": "landing/tel/campaigns",
+   "read_options": "{\"header\": true, \"delimiter\": \"|\"}",
+   "source_table": null,
+   "load_type": "incremental",
+   "watermark_column": null,
+   "primary_keys": "cloud_region,obs_date",
+   "dedupe_order_by": "_ingested_at DESC",
+   "bronze_table": "tel_campaigns",
+   "silver_table": "campaign_day",
+   "silver_write_mode": "merge_scd1",
+   "load_group": "reference",
+   "priority": 25,
+   "sla_hours": 26,
+   "data_owner": "Growth",
+   "sensitivity": "Public",
+   "active": true,
+   "description": "Daily marketing campaigns by cloud region (pipe-delimited, dd/MM/yyyy) - onboarded live in the demo",
+   "fabric_alternative": "Public or partner feed - could be a REST copy, or a shortcut if the provider shares a folder"
+  },
+  "columns": [
+   [
+    "cloud_region",
+    "cloud_region",
+    "string",
+    null
+   ],
+   [
+    "obs_date",
+    "obs_date",
+    "date",
+    "to_date(obs_date, 'dd/MM/yyyy')"
+   ],
+   [
+    "spend_aud",
+    "spend_aud",
+    "double",
+    null
+   ],
+   [
+    "signups",
+    "signups",
+    "double",
+    null
+   ],
+   [
+    "click_through_pct",
+    "click_through_pct",
+    "double",
+    null
+   ],
+   [
+    "channel",
+    "channel",
+    "string",
+    null
+   ]
+  ],
+  "rules": [
+   [
+    "DN-EXT-01",
+    "spend_aud plausible",
+    "technical",
+    "range",
+    "spend_aud",
+    "{\"min\": 0, \"max\": 1000000}",
+    "warn"
+   ],
+   [
+    "DN-EXT-02",
+    "Known channel",
+    "business",
+    "allowed_values",
+    "channel",
+    "{\"values\": [\"Paid search\", \"Social\", \"Partner\", \"Email\"]}",
+    "warn"
+   ]
+  ],
+  "gold": {
+   "transform_id": "DN-G07",
+   "industry": "digital",
+   "gold_table": "support_ticket_vs_campaign_day",
+   "run_order": 220,
+   "sql_text": "WITH ev AS (SELECT d.cloud_region, to_date(v.opened_ts) AS obs_date, COUNT(*) AS support_tickets, SUM(CASE WHEN v.ticket_type = 'OUTAGE' THEN 1 ELSE 0 END) AS urgent_support_tickets FROM silver.support_ticket v JOIN silver.tenant d ON d.tenant_id = v.tenant_id AND d._is_current = true WHERE v._is_deleted = false GROUP BY d.cloud_region, to_date(v.opened_ts)) SELECT x.cloud_region, x.obs_date, x.spend_aud, x.signups, x.click_through_pct, x.channel, COALESCE(ev.support_tickets, 0) AS support_tickets, COALESCE(ev.urgent_support_tickets, 0) AS urgent_support_tickets FROM silver.campaign_day x LEFT JOIN ev ON ev.cloud_region = x.cloud_region AND ev.obs_date = x.obs_date WHERE x._is_deleted = false",
+   "description": "Campaign spend and sign-ups against support load by cloud region",
+   "business_owner": "Growth",
+   "consumers": "Power BI / Direct Lake",
+   "active": true
+  }
+ }
+}

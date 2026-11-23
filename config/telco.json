@@ -1,0 +1,1306 @@
+{
+ "pack": {
+  "id": "telco",
+  "industry": "Telecommunications",
+  "org": "Southern Cross Telecom",
+  "short": "SCT",
+  "prefix": "TC",
+  "tagline": "mobile, fixed and NBN operator",
+  "email_domain": "sct.example.com.au",
+  "region_col": "region",
+  "region_label": "region",
+  "regions": [
+   "Sydney Metro",
+   "Melbourne Metro",
+   "Brisbane",
+   "Perth",
+   "Adelaide",
+   "Regional NSW",
+   "Regional VIC"
+  ],
+  "name_words": [
+   "Parramatta",
+   "Docklands",
+   "Fortitude Valley",
+   "Joondalup",
+   "Glenelg",
+   "Bathurst",
+   "Geelong",
+   "Penrith",
+   "Box Hill",
+   "Ipswich"
+  ],
+  "sys": {
+   "ops": {
+    "code": "nims",
+    "name": "Network Inventory Management System (on-prem Oracle)",
+    "type": "Database",
+    "owner": "Network IT",
+    "fabric": "Mirroring for Oracle (preview) vs Copy job with CDC vs pipeline Copy through the gateway"
+   },
+   "tel": {
+    "code": "oss",
+    "name": "OSS performance counters (15-min CSV) and events calendar",
+    "type": "OSS file drop",
+    "owner": "Network Performance",
+    "fabric": "Eventstream from Kafka/Event Hubs for streaming KPIs; files to OneLake for batch"
+   },
+   "crm": {
+    "code": "dyn",
+    "name": "Dynamics 365 Customer Service",
+    "type": "SaaS CRM",
+    "owner": "Customer Operations",
+    "fabric": "Link to Microsoft Fabric (Dataverse) - no copy - or Copy job"
+   }
+  },
+  "entity": {
+   "table": "network_element",
+   "src": "network_elements",
+   "label": "network element",
+   "plural": "network elements",
+   "id": "element_id",
+   "code": "element_code",
+   "code_prefix": "NE",
+   "name_col": "element_name",
+   "type_col": "element_type",
+   "types": [
+    "RAN_4G",
+    "RAN_5G",
+    "CORE_ROUTER",
+    "OLT",
+    "MICROWAVE"
+   ],
+   "status": [
+    "ACTIVE",
+    "MAINTENANCE",
+    "FAULTY",
+    "DECOMMISSIONED"
+   ],
+   "tier_col": "criticality",
+   "tier_label": "criticality (1-5, 5 = most critical)",
+   "cap_col": "capacity_users",
+   "cap_label": "capacity (users)",
+   "cap_range": [
+    200,
+    20000
+   ],
+   "start_col": "install_date",
+   "start_years": [
+    2008,
+    2025
+   ],
+   "drift_col": "firmware_channel",
+   "drift_values": [
+    "stable",
+    "early-adopter",
+    "lts"
+   ],
+   "owner": "Network Engineering",
+   "count": 240
+  },
+  "event": {
+   "table": "fault_ticket",
+   "src": "fault_tickets",
+   "label": "fault ticket",
+   "plural": "fault tickets",
+   "id": "ticket_id",
+   "id_start": 700001,
+   "type_col": "fault_category",
+   "types": [
+    "OUTAGE",
+    "DEGRADATION",
+    "HARDWARE",
+    "CONFIG"
+   ],
+   "type_names": [
+    "Service outage",
+    "Service degradation",
+    "Hardware fault",
+    "Configuration error"
+   ],
+   "urgent_type": "OUTAGE",
+   "status": [
+    "NEW",
+    "IN_PROGRESS",
+    "RESOLVED",
+    "CANCELLED"
+   ],
+   "open_ts": "opened_ts",
+   "close_ts": "resolved_ts",
+   "open_verb": "opened",
+   "close_verb": "resolved",
+   "amount_col": "field_cost_aud",
+   "amount_range": [
+    0,
+    25000
+   ],
+   "qty_col": "engineer_hours",
+   "qty_range": [
+    0.5,
+    48
+   ],
+   "descriptions": [
+    "Cell site down - power failure",
+    "High packet loss on backhaul",
+    "Card failure in OLT shelf",
+    "Wrong VLAN after change",
+    "Fibre cut by civil works",
+    "Interference reported by customers",
+    "Battery backup alarm",
+    "Software crash after upgrade"
+   ],
+   "owner": "Service Assurance"
+  },
+  "reading": {
+   "table": "cell_kpi",
+   "src": "cell_kpi",
+   "label": "cell KPI counters",
+   "fact": "cell_kpi",
+   "monitored": 24,
+   "monitored_types": [
+    "RAN_4G",
+    "RAN_5G"
+   ],
+   "metrics": [
+    {
+     "col": "prb_util_pct",
+     "label": "PRB utilisation",
+     "unit": "%",
+     "base": 55,
+     "sd": 15,
+     "min": 0,
+     "max": 100,
+     "threshold": 90
+    },
+    {
+     "col": "active_users",
+     "label": "active users",
+     "unit": "users",
+     "base": 420,
+     "sd": 150,
+     "min": 0,
+     "max": 20000
+    },
+    {
+     "col": "drop_rate_pct",
+     "label": "call drop rate",
+     "unit": "%",
+     "base": 0.6,
+     "sd": 0.3,
+     "min": 0,
+     "max": 100
+    }
+   ],
+   "sentinel": 999.9,
+   "owner": "Network Performance"
+  },
+  "party": {
+   "table": "customer",
+   "src": "customers",
+   "label": "customer",
+   "plural": "customers",
+   "id": "customer_id",
+   "id_prefix": "CU",
+   "sf_type": "Account",
+   "segment_col": "segment",
+   "segments": [
+    "Consumer",
+    "Small Business",
+    "Enterprise",
+    "Government"
+   ],
+   "status": [
+    "Active",
+    "Ported out"
+   ],
+   "sensitive_col": "id_document_no",
+   "sensitive_label": "ID document number",
+   "sensitive_treatment": "drop",
+   "owner": "Customer Operations",
+   "count": 300
+  },
+  "extra": {
+   "table": "major_event",
+   "src": "major_events",
+   "label": "major events calendar",
+   "sys": "tel",
+   "cols": [
+    {
+     "col": "expected_crowd",
+     "base": 25000,
+     "sd": 15000,
+     "min": 0,
+     "max": 150000
+    },
+    {
+     "col": "event_hours",
+     "base": 4,
+     "sd": 2,
+     "min": 0,
+     "max": 24
+    },
+    {
+     "col": "temp_sites",
+     "base": 2,
+     "sd": 1,
+     "min": 0,
+     "max": 20
+    }
+   ],
+   "cat_col": "event_kind",
+   "cat_values": [
+    "Sport",
+    "Concert",
+    "Festival",
+    "Conference"
+   ],
+   "owner": "Network Performance",
+   "story": "crowd events against network faults by region"
+  },
+  "alert": {
+   "stream": "network_alarm",
+   "label": "network alarm",
+   "codes": [
+    "LINK_DOWN",
+    "HIGH_TEMP",
+    "POWER_FAIL"
+   ],
+   "storm": "stadium surge"
+  },
+  "ref": {
+   "title": "Fault restoration targets",
+   "owner": "Service Assurance",
+   "rows": [
+    [
+     "OUTAGE",
+     "Critical",
+     4,
+     "NOC"
+    ],
+    [
+     "DEGRADATION",
+     "Major",
+     12,
+     "Network Performance"
+    ],
+    [
+     "HARDWARE",
+     "Major",
+     24,
+     "Field Services"
+    ],
+    [
+     "CONFIG",
+     "Minor",
+     48,
+     "Network Engineering"
+    ]
+   ]
+  },
+  "ai": {
+   "persona": "network operations and service assurance",
+   "cust": "mobile, fixed and wholesale network operators",
+   "q_model": [
+    "Which region had the most outage tickets this month?",
+    "Show average hours to resolve by fault category.",
+    "Which critical network elements have open fault tickets?"
+   ],
+   "q_agent": [
+    "Which 10 cells have the highest PRB utilisation and how many open faults do they have?",
+    "Compare mean time to resolve outage tickets between Sydney Metro and Melbourne Metro.",
+    "Which network elements breached 90% PRB utilisation in the last 3 days?",
+    "What did field visits cost us for hardware faults by region?",
+    "How many enterprise customers are active in Brisbane?"
+   ],
+   "q_onto": [
+    "Show 5G elements in Sydney Metro with an open outage ticket and a high risk band.",
+    "For the most congested cell, list its fault tickets and the customers linked to it.",
+    "Which customers are linked to elements that are currently faulty?"
+   ]
+  },
+  "impact": {
+   "col": "revenue_at_risk_aud",
+   "label": "revenue at risk",
+   "open_cost": 4000,
+   "breach_cost": 600,
+   "cap_rate": 0.5,
+   "rule": "$4,000 per open fault + $600 per congested 15-min window + capacity (users) x criticality x $0.50"
+  }
+ },
+ "source_system": [
+  {
+   "source_system": "nims",
+   "industry": "telco",
+   "display_name": "Network Inventory Management System (on-prem Oracle)",
+   "system_type": "Database",
+   "connection_pattern": "On-premises data gateway -> pipeline Copy with watermark query",
+   "technical_owner": "Network IT",
+   "fabric_options": "Mirroring for Oracle (preview) vs Copy job with CDC vs pipeline Copy through the gateway"
+  },
+  {
+   "source_system": "oss",
+   "industry": "telco",
+   "display_name": "OSS performance counters (15-min CSV) and events calendar",
+   "system_type": "OSS file drop",
+   "connection_pattern": "Files dropped to OneLake (Files/landing) every 15 minutes",
+   "technical_owner": "Network Performance",
+   "fabric_options": "Eventstream from Kafka/Event Hubs for streaming KPIs; files to OneLake for batch"
+  },
+  {
+   "source_system": "dyn",
+   "industry": "telco",
+   "display_name": "Dynamics 365 Customer Service",
+   "system_type": "SaaS CRM",
+   "connection_pattern": "REST/OData API -> JSON landed per day",
+   "technical_owner": "Customer Operations",
+   "fabric_options": "Link to Microsoft Fabric (Dataverse) - no copy - or Copy job"
+  }
+ ],
+ "ingestion_object": [
+  {
+   "object_id": "TC_NIMS_NETWORK_ELEMENTS",
+   "industry": "telco",
+   "source_system": "nims",
+   "source_object": "network_elements",
+   "source_type": "database",
+   "ingest_method": "copy_db",
+   "landing_format": "csv",
+   "landing_path": "landing/nims/network_elements",
+   "read_options": "{\"header\": true, \"delimiter\": \",\"}",
+   "source_table": "src.network_elements",
+   "load_type": "incremental",
+   "watermark_column": "last_modified",
+   "primary_keys": "element_id",
+   "dedupe_order_by": "last_modified DESC, _ingested_at DESC",
+   "bronze_table": "nims_network_elements",
+   "silver_table": "network_element",
+   "silver_write_mode": "merge_scd2",
+   "load_group": "reference",
+   "priority": 10,
+   "sla_hours": 26,
+   "data_owner": "Network Engineering",
+   "sensitivity": "Internal",
+   "active": true,
+   "description": "Network element register. SCD2 keeps status, criticality and capacity_users history.",
+   "fabric_alternative": "Strong mirroring candidate - small, slowly changing, needed in near real time by operations"
+  },
+  {
+   "object_id": "TC_NIMS_FAULT_TICKETS",
+   "industry": "telco",
+   "source_system": "nims",
+   "source_object": "fault_tickets",
+   "source_type": "database",
+   "ingest_method": "copy_db",
+   "landing_format": "csv",
+   "landing_path": "landing/nims/fault_tickets",
+   "read_options": "{\"header\": true, \"delimiter\": \",\"}",
+   "source_table": "src.fault_tickets",
+   "load_type": "incremental",
+   "watermark_column": "last_modified",
+   "primary_keys": "ticket_id",
+   "dedupe_order_by": "last_modified DESC, _ingested_at DESC",
+   "bronze_table": "nims_fault_tickets",
+   "silver_table": "fault_ticket",
+   "silver_write_mode": "merge_scd1",
+   "load_group": "transactional",
+   "priority": 20,
+   "sla_hours": 26,
+   "data_owner": "Service Assurance",
+   "sensitivity": "Internal",
+   "active": true,
+   "description": "Fault tickets - incremental by last_modified; can arrive before their network element (late-arriving).",
+   "fabric_alternative": "Copy job incremental or mirroring; keep the watermark query if the source is on-prem"
+  },
+  {
+   "object_id": "TC_OSS_CELL_KPI",
+   "industry": "telco",
+   "source_system": "oss",
+   "source_object": "cell_kpi",
+   "source_type": "file",
+   "ingest_method": "landed_file",
+   "landing_format": "csv",
+   "landing_path": "landing/oss/cell_kpi",
+   "read_options": "{\"header\": true, \"delimiter\": \",\"}",
+   "source_table": null,
+   "load_type": "incremental",
+   "watermark_column": null,
+   "primary_keys": "element_id,reading_ts",
+   "dedupe_order_by": "_ingested_at DESC",
+   "bronze_table": "oss_cell_kpi",
+   "silver_table": "cell_kpi",
+   "silver_write_mode": "insert_only",
+   "load_group": "telemetry",
+   "priority": 30,
+   "sla_hours": 2,
+   "data_owner": "Network Performance",
+   "sensitivity": "Internal",
+   "active": true,
+   "description": "Cell kpi counters every 15 minutes, four micro-batch files a day. Insert-only and idempotent.",
+   "fabric_alternative": "Eventstream into Eventhouse for real time; keep this batch path for history and reconciliation"
+  },
+  {
+   "object_id": "TC_DYN_CUSTOMERS",
+   "industry": "telco",
+   "source_system": "dyn",
+   "source_object": "customers",
+   "source_type": "api",
+   "ingest_method": "landed_file",
+   "landing_format": "json",
+   "landing_path": "landing/dyn/customers",
+   "read_options": "{\"multiline\": true, \"json_root\": \"records\"}",
+   "source_table": null,
+   "load_type": "full",
+   "watermark_column": null,
+   "primary_keys": "customer_id",
+   "dedupe_order_by": "last_modified_ts DESC, _ingested_at DESC",
+   "bronze_table": "dyn_customers",
+   "silver_table": "customer",
+   "silver_write_mode": "merge_scd1",
+   "load_group": "reference",
+   "priority": 15,
+   "sla_hours": 26,
+   "data_owner": "Customer Operations",
+   "sensitivity": "Confidential",
+   "active": true,
+   "description": "Customers - full daily snapshot from the CRM API (contains PII). Missing rows are soft-deleted.",
+   "fabric_alternative": "Copy job with the CRM connector; Dataverse-based CRMs can use Link to Fabric instead of copying"
+  }
+ ],
+ "column_map": [
+  {
+   "object_id": "TC_NIMS_NETWORK_ELEMENTS",
+   "column_order": 0,
+   "source_column": "element_id",
+   "target_column": "element_id",
+   "data_type": "int",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "TC_NIMS_NETWORK_ELEMENTS",
+   "column_order": 1,
+   "source_column": "element_code",
+   "target_column": "element_code",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "TC_NIMS_NETWORK_ELEMENTS",
+   "column_order": 2,
+   "source_column": "element_name",
+   "target_column": "element_name",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "TC_NIMS_NETWORK_ELEMENTS",
+   "column_order": 3,
+   "source_column": "element_type",
+   "target_column": "element_type",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "TC_NIMS_NETWORK_ELEMENTS",
+   "column_order": 4,
+   "source_column": "region",
+   "target_column": "region",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "TC_NIMS_NETWORK_ELEMENTS",
+   "column_order": 5,
+   "source_column": "status",
+   "target_column": "status",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "TC_NIMS_NETWORK_ELEMENTS",
+   "column_order": 6,
+   "source_column": "criticality",
+   "target_column": "criticality",
+   "data_type": "int",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "TC_NIMS_NETWORK_ELEMENTS",
+   "column_order": 7,
+   "source_column": "capacity_users",
+   "target_column": "capacity_users",
+   "data_type": "double",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "TC_NIMS_NETWORK_ELEMENTS",
+   "column_order": 8,
+   "source_column": "install_date",
+   "target_column": "install_date",
+   "data_type": "date",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "TC_NIMS_NETWORK_ELEMENTS",
+   "column_order": 9,
+   "source_column": "last_modified",
+   "target_column": "last_modified",
+   "data_type": "timestamp",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "TC_NIMS_FAULT_TICKETS",
+   "column_order": 0,
+   "source_column": "ticket_id",
+   "target_column": "ticket_id",
+   "data_type": "int",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "TC_NIMS_FAULT_TICKETS",
+   "column_order": 1,
+   "source_column": "element_id",
+   "target_column": "element_id",
+   "data_type": "int",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "TC_NIMS_FAULT_TICKETS",
+   "column_order": 2,
+   "source_column": "fault_category",
+   "target_column": "fault_category",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "TC_NIMS_FAULT_TICKETS",
+   "column_order": 3,
+   "source_column": "priority",
+   "target_column": "priority",
+   "data_type": "int",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "TC_NIMS_FAULT_TICKETS",
+   "column_order": 4,
+   "source_column": "status",
+   "target_column": "status",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "TC_NIMS_FAULT_TICKETS",
+   "column_order": 5,
+   "source_column": "opened_ts",
+   "target_column": "opened_ts",
+   "data_type": "timestamp",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "TC_NIMS_FAULT_TICKETS",
+   "column_order": 6,
+   "source_column": "resolved_ts",
+   "target_column": "resolved_ts",
+   "data_type": "timestamp",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "TC_NIMS_FAULT_TICKETS",
+   "column_order": 7,
+   "source_column": "field_cost_aud",
+   "target_column": "field_cost_aud",
+   "data_type": "decimal(12,2)",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "TC_NIMS_FAULT_TICKETS",
+   "column_order": 8,
+   "source_column": "engineer_hours",
+   "target_column": "engineer_hours",
+   "data_type": "double",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "TC_NIMS_FAULT_TICKETS",
+   "column_order": 9,
+   "source_column": "description",
+   "target_column": "description",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "TC_NIMS_FAULT_TICKETS",
+   "column_order": 10,
+   "source_column": "last_modified",
+   "target_column": "last_modified",
+   "data_type": "timestamp",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "TC_OSS_CELL_KPI",
+   "column_order": 0,
+   "source_column": "element_id",
+   "target_column": "element_id",
+   "data_type": "int",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "TC_OSS_CELL_KPI",
+   "column_order": 1,
+   "source_column": "reading_time",
+   "target_column": "reading_ts",
+   "data_type": "timestamp",
+   "transform_expr": "to_timestamp(reading_time, 'dd/MM/yyyy HH:mm')",
+   "pii_treatment": "none",
+   "sensitivity": "none",
+   "description": ""
+  },
+  {
+   "object_id": "TC_OSS_CELL_KPI",
+   "column_order": 2,
+   "source_column": "prb_util_pct",
+   "target_column": "prb_util_pct",
+   "data_type": "double",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "TC_OSS_CELL_KPI",
+   "column_order": 3,
+   "source_column": "active_users",
+   "target_column": "active_users",
+   "data_type": "double",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "TC_OSS_CELL_KPI",
+   "column_order": 4,
+   "source_column": "drop_rate_pct",
+   "target_column": "drop_rate_pct",
+   "data_type": "double",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "TC_DYN_CUSTOMERS",
+   "column_order": 0,
+   "source_column": "Id",
+   "target_column": "customer_id",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "TC_DYN_CUSTOMERS",
+   "column_order": 1,
+   "source_column": "FirstName",
+   "target_column": "first_name",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "drop",
+   "sensitivity": "Confidential",
+   "description": ""
+  },
+  {
+   "object_id": "TC_DYN_CUSTOMERS",
+   "column_order": 2,
+   "source_column": "LastName",
+   "target_column": "last_name",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "drop",
+   "sensitivity": "Confidential",
+   "description": ""
+  },
+  {
+   "object_id": "TC_DYN_CUSTOMERS",
+   "column_order": 3,
+   "source_column": "Email",
+   "target_column": "email_masked",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "mask_email",
+   "sensitivity": "Confidential",
+   "description": ""
+  },
+  {
+   "object_id": "TC_DYN_CUSTOMERS",
+   "column_order": 4,
+   "source_column": "MobilePhone",
+   "target_column": "mobile_masked",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "mask_phone",
+   "sensitivity": "Confidential",
+   "description": ""
+  },
+  {
+   "object_id": "TC_DYN_CUSTOMERS",
+   "column_order": 5,
+   "source_column": "Birthdate",
+   "target_column": "birth_year",
+   "data_type": "int",
+   "transform_expr": null,
+   "pii_treatment": "year_only",
+   "sensitivity": "Confidential",
+   "description": ""
+  },
+  {
+   "object_id": "TC_DYN_CUSTOMERS",
+   "column_order": 6,
+   "source_column": "MailingPostalCode",
+   "target_column": "postcode",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "TC_DYN_CUSTOMERS",
+   "column_order": 7,
+   "source_column": "Region__c",
+   "target_column": "region",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "TC_DYN_CUSTOMERS",
+   "column_order": 8,
+   "source_column": "Segment__c",
+   "target_column": "segment",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "TC_DYN_CUSTOMERS",
+   "column_order": 9,
+   "source_column": "ElementId__c",
+   "target_column": "element_id",
+   "data_type": "int",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "TC_DYN_CUSTOMERS",
+   "column_order": 10,
+   "source_column": "Status__c",
+   "target_column": "status",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  },
+  {
+   "object_id": "TC_DYN_CUSTOMERS",
+   "column_order": 11,
+   "source_column": "IdDocumentNo__c",
+   "target_column": "id_document_no",
+   "data_type": "string",
+   "transform_expr": null,
+   "pii_treatment": "drop",
+   "sensitivity": "Restricted",
+   "description": ""
+  },
+  {
+   "object_id": "TC_DYN_CUSTOMERS",
+   "column_order": 12,
+   "source_column": "LastModifiedDate",
+   "target_column": "last_modified_ts",
+   "data_type": "timestamp",
+   "transform_expr": null,
+   "pii_treatment": "none",
+   "sensitivity": "Internal",
+   "description": ""
+  }
+ ],
+ "dq_rule": [
+  {
+   "rule_id": "TC-ENT-01",
+   "object_id": "TC_NIMS_NETWORK_ELEMENTS",
+   "rule_name": "Network element id present",
+   "rule_category": "technical",
+   "check_type": "not_null",
+   "column_name": "element_id",
+   "params": "{}",
+   "severity": "fail",
+   "fail_threshold_pct": 0,
+   "rule_owner": "Data engineering",
+   "description": "Primary key must never be null",
+   "active": true
+  },
+  {
+   "rule_id": "TC-ENT-02",
+   "object_id": "TC_NIMS_NETWORK_ELEMENTS",
+   "rule_name": "Known element_type",
+   "rule_category": "technical",
+   "check_type": "allowed_values",
+   "column_name": "element_type",
+   "params": "{\"values\": [\"RAN_4G\", \"RAN_5G\", \"CORE_ROUTER\", \"OLT\", \"MICROWAVE\"]}",
+   "severity": "warn",
+   "fail_threshold_pct": null,
+   "rule_owner": "Data engineering",
+   "description": "Unknown classes are kept but flagged for the data owner",
+   "active": true
+  },
+  {
+   "rule_id": "TC-ENT-03",
+   "object_id": "TC_NIMS_NETWORK_ELEMENTS",
+   "rule_name": "criticality between 1 and 5",
+   "rule_category": "technical",
+   "check_type": "range",
+   "column_name": "criticality",
+   "params": "{\"min\": 1, \"max\": 5}",
+   "severity": "warn",
+   "fail_threshold_pct": null,
+   "rule_owner": "Data engineering",
+   "description": "Out-of-range ratings usually mean a keying error in the source",
+   "active": true
+  },
+  {
+   "rule_id": "TC-ENT-04",
+   "object_id": "TC_NIMS_NETWORK_ELEMENTS",
+   "rule_name": "Known status",
+   "rule_category": "business",
+   "check_type": "allowed_values",
+   "column_name": "status",
+   "params": "{\"values\": [\"ACTIVE\", \"MAINTENANCE\", \"FAULTY\", \"DECOMMISSIONED\"]}",
+   "severity": "warn",
+   "fail_threshold_pct": null,
+   "rule_owner": "Network Engineering",
+   "description": "Status list agreed with Network Engineering",
+   "active": true
+  },
+  {
+   "rule_id": "TC-EVT-01",
+   "object_id": "TC_NIMS_FAULT_TICKETS",
+   "rule_name": "Fault ticket id present",
+   "rule_category": "technical",
+   "check_type": "not_null",
+   "column_name": "ticket_id",
+   "params": "{}",
+   "severity": "fail",
+   "fail_threshold_pct": 0,
+   "rule_owner": "Data engineering",
+   "description": "Primary key must never be null",
+   "active": true
+  },
+  {
+   "rule_id": "TC-EVT-02",
+   "object_id": "TC_NIMS_FAULT_TICKETS",
+   "rule_name": "Network element exists",
+   "rule_category": "technical",
+   "check_type": "referential",
+   "column_name": "element_id",
+   "params": "{\"ref_table\": \"silver.network_element\", \"ref_column\": \"element_id\"}",
+   "severity": "quarantine",
+   "fail_threshold_pct": null,
+   "rule_owner": "Data engineering",
+   "description": "Held until the network element arrives (late-arriving reference data), then merged automatically",
+   "active": true
+  },
+  {
+   "rule_id": "TC-EVT-03",
+   "object_id": "TC_NIMS_FAULT_TICKETS",
+   "rule_name": "Resolved after opened",
+   "rule_category": "business",
+   "check_type": "expression",
+   "column_name": null,
+   "params": "{\"expr\": \"resolved_ts IS NULL OR resolved_ts >= opened_ts\"}",
+   "severity": "quarantine",
+   "fail_threshold_pct": null,
+   "rule_owner": "Service Assurance",
+   "description": "A fault ticket can't be resolved before it was opened",
+   "active": true
+  },
+  {
+   "rule_id": "TC-EVT-04",
+   "object_id": "TC_NIMS_FAULT_TICKETS",
+   "rule_name": "field_cost_aud not negative",
+   "rule_category": "technical",
+   "check_type": "range",
+   "column_name": "field_cost_aud",
+   "params": "{\"min\": 0}",
+   "severity": "warn",
+   "fail_threshold_pct": null,
+   "rule_owner": "Data engineering",
+   "description": "Negative values are sign errors in the source extract",
+   "active": true
+  },
+  {
+   "rule_id": "TC-EVT-05",
+   "object_id": "TC_NIMS_FAULT_TICKETS",
+   "rule_name": "OUTAGE is priority 1",
+   "rule_category": "business",
+   "check_type": "expression",
+   "column_name": null,
+   "params": "{\"expr\": \"fault_category <> 'OUTAGE' OR priority = 1\"}",
+   "severity": "warn",
+   "fail_threshold_pct": null,
+   "rule_owner": "Service Assurance",
+   "description": "Service outage fault tickets must be raised as priority 1",
+   "active": true
+  },
+  {
+   "rule_id": "TC-EVT-06",
+   "object_id": "TC_NIMS_FAULT_TICKETS",
+   "rule_name": "opened_ts parses",
+   "rule_category": "technical",
+   "check_type": "not_null",
+   "column_name": "opened_ts",
+   "params": "{}",
+   "severity": "fail",
+   "fail_threshold_pct": 5,
+   "rule_owner": "Data engineering",
+   "description": "If more than 5% of timestamps fail to parse, the extract format has changed - stop the load",
+   "active": true
+  },
+  {
+   "rule_id": "TC-RDG-01",
+   "object_id": "TC_OSS_CELL_KPI",
+   "rule_name": "Prb utilisation plausible",
+   "rule_category": "technical",
+   "check_type": "range",
+   "column_name": "prb_util_pct",
+   "params": "{\"min\": 0, \"max\": 100}",
+   "severity": "quarantine",
+   "fail_threshold_pct": null,
+   "rule_owner": "Data engineering",
+   "description": "Sensor fault values (e.g. 999.9) are quarantined, never averaged into Gold",
+   "active": true
+  },
+  {
+   "rule_id": "TC-RDG-02",
+   "object_id": "TC_OSS_CELL_KPI",
+   "rule_name": "Network element known",
+   "rule_category": "technical",
+   "check_type": "referential",
+   "column_name": "element_id",
+   "params": "{\"ref_table\": \"silver.network_element\", \"ref_column\": \"element_id\"}",
+   "severity": "warn",
+   "fail_threshold_pct": null,
+   "rule_owner": "Data engineering",
+   "description": "Readings for unknown tags are flagged",
+   "active": true
+  },
+  {
+   "rule_id": "TC-RDG-03",
+   "object_id": "TC_OSS_CELL_KPI",
+   "rule_name": "Reading time parses",
+   "rule_category": "technical",
+   "check_type": "not_null",
+   "column_name": "reading_ts",
+   "params": "{}",
+   "severity": "fail",
+   "fail_threshold_pct": 5,
+   "rule_owner": "Data engineering",
+   "description": "Timestamp format change stops the load",
+   "active": true
+  },
+  {
+   "rule_id": "TC-PTY-01",
+   "object_id": "TC_DYN_CUSTOMERS",
+   "rule_name": "Customer id present",
+   "rule_category": "technical",
+   "check_type": "not_null",
+   "column_name": "customer_id",
+   "params": "{}",
+   "severity": "fail",
+   "fail_threshold_pct": 0,
+   "rule_owner": "Data engineering",
+   "description": "Primary key must never be null",
+   "active": true
+  },
+  {
+   "rule_id": "TC-PTY-02",
+   "object_id": "TC_DYN_CUSTOMERS",
+   "rule_name": "Email looks valid",
+   "rule_category": "technical",
+   "check_type": "regex",
+   "column_name": "email_masked",
+   "params": "{\"pattern\": \"^[^@\\\\s]+@[^@\\\\s]+\\\\.[^@\\\\s]+$\"}",
+   "severity": "warn",
+   "fail_threshold_pct": null,
+   "rule_owner": "Data engineering",
+   "description": "Checked on the raw value before masking",
+   "active": true
+  },
+  {
+   "rule_id": "TC-PTY-03",
+   "object_id": "TC_DYN_CUSTOMERS",
+   "rule_name": "Australian postcode",
+   "rule_category": "technical",
+   "check_type": "regex",
+   "column_name": "postcode",
+   "params": "{\"pattern\": \"^\\\\d{4}$\"}",
+   "severity": "warn",
+   "fail_threshold_pct": null,
+   "rule_owner": "Data engineering",
+   "description": "Four digits",
+   "active": true
+  },
+  {
+   "rule_id": "TC-PTY-04",
+   "object_id": "TC_DYN_CUSTOMERS",
+   "rule_name": "Known segment",
+   "rule_category": "business",
+   "check_type": "allowed_values",
+   "column_name": "segment",
+   "params": "{\"values\": [\"Consumer\", \"Small Business\", \"Enterprise\", \"Government\"]}",
+   "severity": "warn",
+   "fail_threshold_pct": null,
+   "rule_owner": "Customer Operations",
+   "description": "Segments agreed with Customer Operations",
+   "active": true
+  }
+ ],
+ "gold_transform": [
+  {
+   "transform_id": "TC-G01",
+   "industry": "telco",
+   "gold_table": "dim_date",
+   "run_order": 100,
+   "sql_text": "SELECT CAST(date_format(d, 'yyyyMMdd') AS INT) AS date_key, d AS calendar_date, year(d) AS calendar_year, quarter(d) AS calendar_quarter, month(d) AS month_number, date_format(d, 'MMM') AS month_name, date_format(d, 'yyyy-MM') AS year_month, dayofmonth(d) AS day_of_month, date_format(d, 'EEE') AS day_name, CASE WHEN month(d) >= 7 THEN year(d) + 1 ELSE year(d) END AS fy_year, concat('FY', substring(CAST(CASE WHEN month(d) >= 7 THEN year(d) + 1 ELSE year(d) END AS STRING), 3, 2)) AS fy_label, CASE WHEN dayofweek(d) IN (1, 7) THEN true ELSE false END AS is_weekend FROM (SELECT explode(sequence(to_date('2020-01-01'), to_date('2028-12-31'), interval 1 day)) AS d) dates",
+   "description": "Calendar with Australian financial year",
+   "business_owner": "Data engineering",
+   "consumers": "Power BI / Direct Lake, data agent",
+   "active": true
+  },
+  {
+   "transform_id": "TC-G02",
+   "industry": "telco",
+   "gold_table": "dim_network_element",
+   "run_order": 110,
+   "sql_text": "SELECT element_id, element_code, element_name, element_type, region, status, criticality, capacity_users, install_date, CAST(floor(months_between(current_date(), install_date) / 12) AS INT) AS age_years, _valid_from AS version_valid_from FROM silver.network_element WHERE _is_current = true",
+   "description": "Current view of the network element register (history stays in Silver SCD2)",
+   "business_owner": "Network Engineering",
+   "consumers": "Power BI / Direct Lake, data agent",
+   "active": true
+  },
+  {
+   "transform_id": "TC-G03",
+   "industry": "telco",
+   "gold_table": "fact_fault_ticket",
+   "run_order": 120,
+   "sql_text": "SELECT v.ticket_id, v.element_id, v.fault_category, v.priority, v.status, v.opened_ts, v.resolved_ts, to_date(v.opened_ts) AS opened_date, CAST(date_format(v.opened_ts, 'yyyyMMdd') AS INT) AS opened_date_key, ROUND((unix_timestamp(v.resolved_ts) - unix_timestamp(v.opened_ts)) / 3600.0, 2) AS hours_to_close, CASE WHEN v.status IN ('NEW', 'IN_PROGRESS') THEN 1 ELSE 0 END AS is_open, v.field_cost_aud, v.engineer_hours, d.region, d.element_type, d.criticality FROM silver.fault_ticket v LEFT JOIN silver.network_element d ON d.element_id = v.element_id AND d._is_current = true WHERE v._is_deleted = false",
+   "description": "Fault tickets with duration and network element attributes",
+   "business_owner": "Service Assurance",
+   "consumers": "Power BI / Direct Lake, data agent",
+   "active": true
+  },
+  {
+   "transform_id": "TC-G04",
+   "industry": "telco",
+   "gold_table": "fact_cell_kpi_hourly",
+   "run_order": 130,
+   "sql_text": "SELECT element_id, date_trunc('HOUR', reading_ts) AS reading_hour, to_date(reading_ts) AS reading_date, CAST(date_format(reading_ts, 'yyyyMMdd') AS INT) AS reading_date_key, COUNT(*) AS readings, ROUND(AVG(prb_util_pct), 2) AS avg_prb_util_pct, ROUND(MAX(prb_util_pct), 2) AS max_prb_util_pct, ROUND(AVG(active_users), 2) AS avg_active_users, ROUND(AVG(drop_rate_pct), 2) AS avg_drop_rate_pct, SUM(CASE WHEN prb_util_pct > 90 THEN 1 ELSE 0 END) AS breach_readings FROM silver.cell_kpi GROUP BY element_id, date_trunc('HOUR', reading_ts), to_date(reading_ts), CAST(date_format(reading_ts, 'yyyyMMdd') AS INT)",
+   "description": "Hourly cell KPI counters with threshold breaches",
+   "business_owner": "Network Performance",
+   "consumers": "Power BI / Direct Lake, data agent",
+   "active": true
+  },
+  {
+   "transform_id": "TC-G05",
+   "industry": "telco",
+   "gold_table": "network_element_health_scorecard",
+   "run_order": 200,
+   "sql_text": "WITH asat AS (SELECT MAX(to_date(opened_ts)) AS as_at FROM silver.fault_ticket), ev AS (SELECT v.element_id, COUNT(*) AS fault_tickets_12m, SUM(CASE WHEN v.status IN ('NEW', 'IN_PROGRESS') THEN 1 ELSE 0 END) AS open_fault_tickets, SUM(CASE WHEN v.fault_category = 'OUTAGE' THEN 1 ELSE 0 END) AS urgent_fault_tickets_12m, ROUND(SUM(v.field_cost_aud), 2) AS field_cost_aud_12m FROM silver.fault_ticket v CROSS JOIN asat WHERE v._is_deleted = false AND to_date(v.opened_ts) > add_months(asat.as_at, -12) GROUP BY v.element_id), rd AS (SELECT element_id, MAX(prb_util_pct) AS max_prb_util_pct, SUM(CASE WHEN prb_util_pct > 90 THEN 1 ELSE 0 END) AS breach_readings FROM silver.cell_kpi GROUP BY element_id), s AS (SELECT d.element_id, d.element_code, d.element_name, d.element_type, d.region, d.status, d.criticality, COALESCE(ev.fault_tickets_12m, 0) AS fault_tickets_12m, COALESCE(ev.open_fault_tickets, 0) AS open_fault_tickets, COALESCE(ev.urgent_fault_tickets_12m, 0) AS urgent_fault_tickets_12m, COALESCE(ev.field_cost_aud_12m, 0) AS field_cost_aud_12m, rd.max_prb_util_pct, COALESCE(rd.breach_readings, 0) AS breach_readings, d.capacity_users FROM silver.network_element d LEFT JOIN ev ON ev.element_id = d.element_id LEFT JOIN rd ON rd.element_id = d.element_id WHERE d._is_current = true) SELECT s.*, ROUND(LEAST(100, COALESCE(s.criticality, 1) * 8 + s.open_fault_tickets * 6 + s.urgent_fault_tickets_12m * 4 + LEAST(s.breach_readings, 20) * 1.5), 1) AS risk_score, CASE WHEN LEAST(100, COALESCE(s.criticality, 1) * 8 + s.open_fault_tickets * 6 + s.urgent_fault_tickets_12m * 4 + LEAST(s.breach_readings, 20) * 1.5) >= 60 THEN 'High' WHEN LEAST(100, COALESCE(s.criticality, 1) * 8 + s.open_fault_tickets * 6 + s.urgent_fault_tickets_12m * 4 + LEAST(s.breach_readings, 20) * 1.5) >= 35 THEN 'Medium' ELSE 'Low' END AS risk_band, ROUND(s.open_fault_tickets * 4000 + LEAST(s.breach_readings, 20) * 600 + COALESCE(s.capacity_users, 0) * COALESCE(s.criticality, 1) * 0.5, 0) AS revenue_at_risk_aud FROM s",
+   "description": "Network element risk score - fault tickets, urgent work and PRB utilisation breaches, plus revenue at risk in AUD (weights and dollar rates are illustrative: $4,000 per open fault + $600 per congested 15-min window + capacity (users) x criticality x $0.50)",
+   "business_owner": "Network Engineering",
+   "consumers": "Power BI / Direct Lake, data agent",
+   "active": true
+  },
+  {
+   "transform_id": "TC-G06",
+   "industry": "telco",
+   "gold_table": "customer_summary",
+   "run_order": 210,
+   "sql_text": "SELECT region, segment, COUNT(*) AS customers, SUM(CASE WHEN status = 'Active' THEN 1 ELSE 0 END) AS active_customers, ROUND(AVG(year(current_date()) - birth_year), 1) AS avg_age, COUNT(DISTINCT element_id) AS linked_network_elements FROM silver.customer WHERE _is_deleted = false GROUP BY region, segment",
+   "description": "Customers by region and segment",
+   "business_owner": "Customer Operations",
+   "consumers": "Power BI / Direct Lake, data agent",
+   "active": true
+  }
+ ],
+ "onboard": {
+  "object": {
+   "object_id": "TC_OSS_MAJOR_EVENTS",
+   "industry": "telco",
+   "source_system": "oss",
+   "source_object": "major_events",
+   "source_type": "file",
+   "ingest_method": "landed_file",
+   "landing_format": "txt",
+   "landing_path": "landing/oss/major_events",
+   "read_options": "{\"header\": true, \"delimiter\": \"|\"}",
+   "source_table": null,
+   "load_type": "incremental",
+   "watermark_column": null,
+   "primary_keys": "region,obs_date",
+   "dedupe_order_by": "_ingested_at DESC",
+   "bronze_table": "oss_major_events",
+   "silver_table": "major_event",
+   "silver_write_mode": "merge_scd1",
+   "load_group": "reference",
+   "priority": 25,
+   "sla_hours": 26,
+   "data_owner": "Network Performance",
+   "sensitivity": "Public",
+   "active": true,
+   "description": "Daily major events calendar by region (pipe-delimited, dd/MM/yyyy) - onboarded live in the demo",
+   "fabric_alternative": "Public or partner feed - could be a REST copy, or a shortcut if the provider shares a folder"
+  },
+  "columns": [
+   [
+    "region",
+    "region",
+    "string",
+    null
+   ],
+   [
+    "obs_date",
+    "obs_date",
+    "date",
+    "to_date(obs_date, 'dd/MM/yyyy')"
+   ],
+   [
+    "expected_crowd",
+    "expected_crowd",
+    "double",
+    null
+   ],
+   [
+    "event_hours",
+    "event_hours",
+    "double",
+    null
+   ],
+   [
+    "temp_sites",
+    "temp_sites",
+    "double",
+    null
+   ],
+   [
+    "event_kind",
+    "event_kind",
+    "string",
+    null
+   ]
+  ],
+  "rules": [
+   [
+    "TC-EXT-01",
+    "expected_crowd plausible",
+    "technical",
+    "range",
+    "expected_crowd",
+    "{\"min\": 0, \"max\": 150000}",
+    "warn"
+   ],
+   [
+    "TC-EXT-02",
+    "Known event_kind",
+    "business",
+    "allowed_values",
+    "event_kind",
+    "{\"values\": [\"Sport\", \"Concert\", \"Festival\", \"Conference\"]}",
+    "warn"
+   ]
+  ],
+  "gold": {
+   "transform_id": "TC-G07",
+   "industry": "telco",
+   "gold_table": "fault_ticket_vs_major_event",
+   "run_order": 220,
+   "sql_text": "WITH ev AS (SELECT d.region, to_date(v.opened_ts) AS obs_date, COUNT(*) AS fault_tickets, SUM(CASE WHEN v.fault_category = 'OUTAGE' THEN 1 ELSE 0 END) AS urgent_fault_tickets FROM silver.fault_ticket v JOIN silver.network_element d ON d.element_id = v.element_id AND d._is_current = true WHERE v._is_deleted = false GROUP BY d.region, to_date(v.opened_ts)) SELECT x.region, x.obs_date, x.expected_crowd, x.event_hours, x.temp_sites, x.event_kind, COALESCE(ev.fault_tickets, 0) AS fault_tickets, COALESCE(ev.urgent_fault_tickets, 0) AS urgent_fault_tickets FROM silver.major_event x LEFT JOIN ev ON ev.region = x.region AND ev.obs_date = x.obs_date WHERE x._is_deleted = false",
+   "description": "Crowd events against network faults by region",
+   "business_owner": "Network Performance",
+   "consumers": "Power BI / Direct Lake",
+   "active": true
+  }
+ }
+}
